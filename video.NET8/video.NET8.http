@@ -1,0 +1,6 @@
+@video.NET8_HostAddress = http://localhost:5208
+
+GET {{video.NET8_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
