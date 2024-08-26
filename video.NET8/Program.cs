@@ -1,22 +1,23 @@
 using Microsoft.EntityFrameworkCore;
-using video.NET8.Data;
 using Microsoft.AspNetCore.Identity;
+using LibraryManagementSystem.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 
-builder.Services.AddDbContext<AuthDbContext>(options =>
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 
-    options.UseInMemoryDatabase("AuthDb");
 });
-
+//
 
 builder.Services.AddAuthorization();
-
-builder.Services.AddIdentityApiEndpoints<IdentityUser>().AddEntityFrameworkStores<AuthDbContext>();
+//
+builder.Services.AddIdentityApiEndpoints<IdentityUser>().AddEntityFrameworkStores<ApplicationDbContext>();
 
 
     
@@ -24,16 +25,16 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
-
+//
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo()
     {
-        Title = "Auth Demo",
+        Title = "Library Managment System",
         Version = "v1"
     });
 
-
+    //
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme()
     {
         In= Microsoft.OpenApi.Models.ParameterLocation.Header,
@@ -43,7 +44,8 @@ builder.Services.AddSwaggerGen(options =>
         BearerFormat = "JWT" ,
         Scheme = "bearer"
     });
-
+   
+    //
     options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement()
     {
         {
@@ -63,7 +65,7 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-
+//
 app.MapIdentityApi<IdentityUser>();
 
 
