@@ -5,8 +5,8 @@ namespace LibraryManagementSystem.Domain
 
     public enum UserRole
     {
-        Admin,
-        Member
+        Admin, //0
+        Member //1
     }
 
 
@@ -21,7 +21,7 @@ namespace LibraryManagementSystem.Domain
         public string Username { get; set; }
 
         [Required]
-        public string PasswordHash { get; set; } // Store hashed passwords, not plain text
+        public string Password { get; set; } // Store hashed passwords, not plain text in the future
 
         [Required]
         public UserRole Role { get; set; } // Either "admin" or "member"

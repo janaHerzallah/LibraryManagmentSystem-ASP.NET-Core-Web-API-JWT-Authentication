@@ -186,7 +186,7 @@ namespace LibraryManagmentSystem.Migrations
                     b.Property<DateTime>("DateModified")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("PasswordHash")
+                    b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("text");
 
