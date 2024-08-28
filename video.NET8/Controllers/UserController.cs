@@ -52,10 +52,10 @@ namespace LibraryManagmentSystem.Controllers
             }
         }
 
-        [HttpGet("ViewMembersByAdmin")]
+        [HttpGet("GetMembersByAdmin")]
         [Authorize(Roles = "Admin")] // This attribute will require users with the role "Admin" to access the endpoint
 
-        public async Task<IActionResult> GetUsers()
+        public async Task<IActionResult> GetMembers()
         {
             try
             {

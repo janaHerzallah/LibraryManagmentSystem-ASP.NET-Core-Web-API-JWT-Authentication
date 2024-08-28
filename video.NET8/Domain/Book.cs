@@ -16,11 +16,14 @@ namespace LibraryManagementSystem.Domain
 
         public int? TotalCopies { get; set; } // it can be null if there is no total copies
 
+        public bool Active { get; set; } = true; // Default to true
+
         public int? AuthorId { get; set; } // it can be null if there is no author related to it 
 
         public int? CategoryId { get; set; } // it can be null if there is no category related to it
 
         public int? LibraryBranchId { get; set; } // it can be null if there is no library branch related to it
+        
         public Author Author { get; set; }
 
         public Category Category { get; set; }

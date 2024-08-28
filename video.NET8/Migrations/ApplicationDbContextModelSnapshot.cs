@@ -53,6 +53,9 @@ namespace LibraryManagmentSystem.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean");
+
                     b.Property<int?>("AuthorId")
                         .HasColumnType("integer");
 
