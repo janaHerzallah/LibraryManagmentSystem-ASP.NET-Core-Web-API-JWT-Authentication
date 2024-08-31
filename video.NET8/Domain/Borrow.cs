@@ -15,5 +15,7 @@ namespace LibraryManagementSystem.Domain
 
         public DateTime? ReturnDate;
 
+        public bool Active { get; set; } = true; // Default to true
+
     }
 }

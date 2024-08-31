@@ -10,7 +10,9 @@ namespace LibraryManagementSystem.Domain
         [Required]
         public string? Name { get; set; }
 
-      
+        public bool Active { get; set; } = true; // Default to true
+
+
         public ICollection<Book> Books { get; set; }
 
         public Author()

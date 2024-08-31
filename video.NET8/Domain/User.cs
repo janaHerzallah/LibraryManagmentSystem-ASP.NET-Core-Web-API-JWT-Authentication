@@ -28,6 +28,7 @@ namespace LibraryManagementSystem.Domain
 
         public string? Token { get; set; } // JWT token
 
-        
+        public bool Active { get; set; } = true; // Default to true
+
     }
 }

@@ -12,6 +12,7 @@ namespace LibraryManagementSystem.Domain
 
         public string? Location { get; set; }
 
+        public bool Active { get; set; } = true; // Default to true
         public ICollection<Book> Books { get; set; }
 
     }

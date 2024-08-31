@@ -11,6 +11,8 @@ namespace LibraryManagementSystem.Domain
 
         public string? Email { get; set; }
 
+        public bool Active { get; set; } = true; // Default to true
+
 
     }
 }

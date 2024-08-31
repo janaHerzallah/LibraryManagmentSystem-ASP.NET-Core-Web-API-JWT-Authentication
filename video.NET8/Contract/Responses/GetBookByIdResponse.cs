@@ -8,7 +8,7 @@
         public int? AvailableCopies { get; set; }
         public int? TotalCopies { get; set; }
         public int? AuthorId { get; set; }
-        public string AuthorName { get; set; } // Add AuthorName property
+        public string AuthorName { get; set; } // from the relationship between the authors and books table
         public int? CategoryId { get; set; }
         public int? LibraryBranchId { get; set; }
         public DateTime CreatedAt { get; set; }

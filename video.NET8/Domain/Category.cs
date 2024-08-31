@@ -15,6 +15,7 @@ namespace LibraryManagementSystem.Domain
 
         public ICollection<Book> Books { get; set; }
 
+        public bool Active { get; set; } = true; // Default to true
 
         public Category() { 
 

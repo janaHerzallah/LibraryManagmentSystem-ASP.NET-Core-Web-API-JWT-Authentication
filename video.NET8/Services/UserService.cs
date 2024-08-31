@@ -40,6 +40,7 @@ namespace LibraryManagementSystem.Services
                 Role = Enum.Parse<UserRole>(request.Role, true),
                 DateCreated = DateTime.UtcNow,
                 DateModified = DateTime.UtcNow
+                
             };
 
             // Add the user to the database
@@ -109,7 +110,7 @@ namespace LibraryManagementSystem.Services
 
         public async Task<bool> ValidateToken(string token)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Token == token);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Token == token && u.Active == true);
 
             if (user == null || user.Role != UserRole.Admin)
             {
@@ -120,7 +121,7 @@ namespace LibraryManagementSystem.Services
         }
         public async Task<IEnumerable<User>> GetMembersByAdminOnly()
         {
-            return await _context.Users.Where(u => u.Role == UserRole.Member).ToListAsync();
+            return await _context.Users.Where(u => u.Role == UserRole.Member && u.Active== true).ToListAsync();
         }
     }
 }

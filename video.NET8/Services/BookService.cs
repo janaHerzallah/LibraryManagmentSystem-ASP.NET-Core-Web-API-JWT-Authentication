@@ -64,6 +64,10 @@ namespace LibraryManagementSystem.Services
 
         public async Task<AddBookResponse> AddBookByAdmin(AddBookRequest book)
         {
+            if (book.TotalCopies < book.AvailableCopies)
+            {
+                throw new ArgumentException("Total copies have to be equal or more than Available ones");
+            }
             Book bookDataBase = new Book
             {
                 Title = book.Title,
