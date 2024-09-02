@@ -6,6 +6,7 @@ using LibraryManagementSystem.Data;
 using LibraryManagementSystem.Services;
 using LibraryManagmentSystem.Interfaces;
 using System.Text;
+using LibraryManagementSystem.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IAuthorService, AuthorService>();
+builder.Services.AddScoped<IMemberService, MemberService>();
+builder.Services.AddScoped<IBorrowService, BorrowService>();
 
 
 // Configure Identity

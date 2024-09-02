@@ -9,8 +9,8 @@ namespace LibraryManagmentSystem.Interfaces
 
         Task<LogInUserResponse>LogInUser(LogInUserRequest request);
 
-        Task<bool> ValidateToken(string token);
-
+        Task<bool> ValidateAdminsToken(string token);
+        Task<bool> ValidateUsersToken(string token);
         Task<IEnumerable<User>> GetMembersByAdminOnly();
     }
 }

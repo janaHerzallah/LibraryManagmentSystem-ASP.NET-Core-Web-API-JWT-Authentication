@@ -74,7 +74,7 @@ namespace LibraryManagmentSystem.Controllers
                 var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
 
                 // Validate the token using the service method
-                if (!await _userService.ValidateToken(tokenValue))
+                if (!await _userService.ValidateAdminsToken(tokenValue))
                 {
                     return Unauthorized(new { message = "Invalid token or unauthorized user" });
                 }

@@ -108,7 +108,7 @@ namespace LibraryManagementSystem.Services
 
 
 
-        public async Task<bool> ValidateToken(string token)
+        public async Task<bool> ValidateAdminsToken(string token)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Token == token && u.Active == true);
 
@@ -117,6 +117,18 @@ namespace LibraryManagementSystem.Services
                 return false;
             }
 
+            return true;
+        }
+
+        public async Task<bool> ValidateUsersToken(string token)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Token == token && u.Active == true);
+
+            if (user == null)
+            {
+                return false;
+            }
+            // if its a user either its an admin or a member it will return true so its authenticated 
             return true;
         }
         public async Task<IEnumerable<User>> GetMembersByAdminOnly()
