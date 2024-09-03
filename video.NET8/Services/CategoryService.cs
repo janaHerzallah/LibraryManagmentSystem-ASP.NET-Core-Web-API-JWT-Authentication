@@ -31,7 +31,7 @@ namespace LibraryManagementSystem.Services
                                      Description = c.Description,
                                      CreatedAt = c.DateCreated,
                                      UpdatedAt = c.DateModified,
-                                     Books = c.Books.Select(b => new GetAuthorsBookResponse
+                                     Books = c.Books.Select(b => new GetBooksDetailsResponse
                                      {
                                          Id = b.Id,
                                          Title = b.Title
@@ -57,7 +57,7 @@ namespace LibraryManagementSystem.Services
                 Description = category.Description,
                 CreatedAt = category.DateCreated,
                 UpdatedAt = category.DateModified,
-                Books = category.Books.Select(b => new GetAuthorsBookResponse
+                Books = category.Books.Select(b => new GetBooksDetailsResponse
                 {
                     Id = b.Id,
                     Title = b.Title
@@ -165,7 +165,7 @@ namespace LibraryManagementSystem.Services
         }
 
 
-        public async Task<IEnumerable<GetAuthorsBookResponse>> GetBooksInCategoryAsync(int categoryId)
+        public async Task<IEnumerable<GetBooksDetailsResponse>> GetBooksInCategoryAsync(int categoryId)
         {
             var category = await _context.Categories.Include(c => c.Books)
                                                     .FirstOrDefaultAsync(c => c.Id == categoryId && c.Active);
@@ -174,7 +174,7 @@ namespace LibraryManagementSystem.Services
                 throw new KeyNotFoundException("Category not found or inactive.");
             }
 
-            return category.Books.Select(b => new GetAuthorsBookResponse
+            return category.Books.Select(b => new GetBooksDetailsResponse
             {
                 Id = b.Id,
                 Title = b.Title
@@ -201,6 +201,53 @@ namespace LibraryManagementSystem.Services
             await _context.SaveChangesAsync();
         }
 
+
+        public async Task<IEnumerable<GetBooksDetailsResponse>> FilterBooksAsync(int? authorId = null, bool? available = null)
+        {
+            var query = _context.Books.AsQueryable();
+
+            if (authorId.HasValue)
+            {
+                query = query.Where(b => b.AuthorId == authorId.Value);
+            }
+
+            if (available.HasValue)
+            {
+                query = query.Where(b => b.AvailableCopies > 0 == available.Value);
+            }
+
+            return await query.Select(b => new GetBooksDetailsResponse
+            {
+                Id = b.Id,
+                Title = b.Title,
+                //AuthorId = b.AuthorId,
+               // AvailableCopies = b.AvailableCopies
+            }).ToListAsync();
+        }
+
+
+        public async Task<IEnumerable<GetBooksDetailsResponse>> SearchBooksAsync(string? title = null, string? authorName = null)
+        {
+            var query = _context.Books.Include(b => b.Author).AsQueryable();
+
+            if (!string.IsNullOrEmpty(title))
+            {
+                query = query.Where(b => b.Title.Contains(title));
+            }
+
+            if (!string.IsNullOrEmpty(authorName))
+            {
+                query = query.Where(b => b.Author.Name.Contains(authorName));
+            }
+
+            return await query.Select(b => new GetBooksDetailsResponse
+            {
+                Id = b.Id,
+                Title = b.Title,
+               // AuthorName = b.Author.Name,
+              //  AvailableCopies = b.AvailableCopies
+            }).ToListAsync();
+        }
 
 
 

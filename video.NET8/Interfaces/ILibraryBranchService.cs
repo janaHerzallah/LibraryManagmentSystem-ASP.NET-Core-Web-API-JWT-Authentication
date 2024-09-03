@@ -12,7 +12,7 @@ namespace LibraryManagmentSystem.Interfaces
         Task<UpdateLibraryBranchResponse> UpdateBranchAsync(int id, UpdateLibraryBranchRequest branch);
         Task<bool> DeleteBranchAsync(int id);
         Task SoftDeleteBranchAsync(int id);
-        Task<IEnumerable<GetAuthorsBookResponse>> GetBooksInBranchAsync(int branchId);
+        Task<IEnumerable<GetBooksDetailsResponse>> GetBooksInBranchAsync(int branchId);
 
         Task AssignBookToBranchAsync(int branchId, int bookId);
 

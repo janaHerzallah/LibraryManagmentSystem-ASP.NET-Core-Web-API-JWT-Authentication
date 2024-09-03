@@ -2,7 +2,7 @@
 
 namespace LibraryManagmentSystem.Contract.Responses
 {
-    public class GetAuthorsBookResponse
+    public class GetBooksDetailsResponse
     {
         public int Id { get; set; }
 

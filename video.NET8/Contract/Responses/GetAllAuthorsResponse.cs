@@ -12,7 +12,7 @@ namespace LibraryManagmentSystem.Contract.Responses
         
         public string? Name { get; set; }
 
-        public List<GetAuthorsBookResponse> Books { get; set; }
+        public List<GetBooksDetailsResponse> Books { get; set; }
 
 
     }
