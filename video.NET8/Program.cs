@@ -24,6 +24,9 @@ builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IAuthorService, AuthorService>();
 builder.Services.AddScoped<IMemberService, MemberService>();
 builder.Services.AddScoped<IBorrowService, BorrowService>();
+builder.Services.AddScoped<ILibraryBranchService, LibraryBranchService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+
 
 
 // Configure Identity

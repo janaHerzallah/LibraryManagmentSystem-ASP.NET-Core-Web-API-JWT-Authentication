@@ -2,7 +2,7 @@
 
 namespace LibraryManagementSystem.Domain
 {
-    public class Category
+    public class Category: DateBaseClass
     {
 
         [Key]
