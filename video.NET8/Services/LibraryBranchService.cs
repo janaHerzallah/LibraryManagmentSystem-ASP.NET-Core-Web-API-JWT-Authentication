@@ -31,7 +31,7 @@ namespace LibraryManagementSystem.Services
                                      Active = lb.Active,
                                      CreatedDate = lb.DateCreated,
                                      UpdatedDate = lb.DateModified,
-                                     Books = lb.Books.Select(b => new GetAuthorsBookResponse
+                                     Books = lb.Books.Select(b => new GetBooksDetailsResponse
                                      {
                                          Id = b.Id,
                                          Title = b.Title
@@ -52,7 +52,7 @@ namespace LibraryManagementSystem.Services
                 Active = branch.Active,
                 CreatedDate = branch.DateCreated,
                 UpdatedDate = branch.DateModified,
-                Books = branch.Books.Select(b => new GetAuthorsBookResponse
+                Books = branch.Books.Select(b => new GetBooksDetailsResponse
                 {
                     Id = b.Id,
                     Title = b.Title
@@ -173,7 +173,7 @@ namespace LibraryManagementSystem.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<GetAuthorsBookResponse>> GetBooksInBranchAsync(int branchId)
+        public async Task<IEnumerable<GetBooksDetailsResponse>> GetBooksInBranchAsync(int branchId)
         {
             var branch = await _context.Branches
                                        .Include(lb => lb.Books)
@@ -185,7 +185,7 @@ namespace LibraryManagementSystem.Services
             }
 
             return branch.Books.Where(b => b.Active)
-                               .Select(b => new GetAuthorsBookResponse
+                               .Select(b => new GetBooksDetailsResponse
                                {
                                    Id = b.Id,
                                    Title = b.Title

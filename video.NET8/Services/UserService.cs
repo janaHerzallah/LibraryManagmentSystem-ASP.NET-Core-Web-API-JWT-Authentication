@@ -107,7 +107,6 @@ namespace LibraryManagementSystem.Services
         }
 
 
-
         public async Task<bool> ValidateAdminsToken(string token)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Token == token && u.Active == true);
@@ -135,5 +134,6 @@ namespace LibraryManagementSystem.Services
         {
             return await _context.Users.Where(u => u.Role == UserRole.Member && u.Active== true).ToListAsync();
         }
+
     }
 }

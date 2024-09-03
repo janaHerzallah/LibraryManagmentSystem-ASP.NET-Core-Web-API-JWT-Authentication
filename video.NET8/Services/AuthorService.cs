@@ -30,7 +30,7 @@ namespace LibraryManagementSystem.Services
                                      {
                                          Id = a.Id,
                                          Name = a.Name,
-                                         Books = a.Books.Select(b => new GetAuthorsBookResponse
+                                         Books = a.Books.Select(b => new GetBooksDetailsResponse
                                          {
                                              Id = b.Id,
                                              Title = b.Title
@@ -57,7 +57,7 @@ namespace LibraryManagementSystem.Services
             {
                 Id = author.Id,
                 Name = author.Name,
-                Books = author.Books.Select(b => new GetAuthorsBookResponse
+                Books = author.Books.Select(b => new GetBooksDetailsResponse
                 {
                     Id = b.Id,
                     Title = b.Title

@@ -24,6 +24,7 @@ namespace LibraryManagementSystem.Controllers
             _userService = userService;
         }
 
+        [Authorize] // members and admins can access this endpoint
         [HttpGet]
         public async Task<ActionResult<IEnumerable<GetCategoryResponse>>> GetAllCategories()
         {
@@ -39,6 +40,7 @@ namespace LibraryManagementSystem.Controllers
             return Ok(categories);
         }
 
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<GetCategoryResponse>> GetCategoryById(int id)
         {
@@ -62,9 +64,9 @@ namespace LibraryManagementSystem.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(Roles ="Admin")]
         [HttpPost]
-        public async Task<ActionResult<AddCategoryResponse>> AddCategory(AddCategoryRequest request)
+        public async Task<ActionResult<AddCategoryResponse>> AddCategoryByAdmin(AddCategoryRequest request)
         {
 
             //var token = Request.Headers["Authorization"].ToString();
@@ -81,7 +83,7 @@ namespace LibraryManagementSystem.Controllers
 
         [Authorize(Roles = "Admin")] //it actually works without the logic of auhtentication down below
         [HttpPut("{id}")]
-        public async Task<ActionResult<UpdateCategoryResponse>> UpdateCategory(int id, UpdateCategoryRequest request)
+        public async Task<ActionResult<UpdateCategoryResponse>> UpdateCategoryByAdmin(int id, UpdateCategoryRequest request)
         {
             //var token = Request.Headers["Authorization"].ToString();
             //var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
@@ -104,7 +106,7 @@ namespace LibraryManagementSystem.Controllers
 
         [Authorize]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCategory(int id)
+        public async Task<IActionResult> DeleteCategoryByAdmin(int id)
         {
             var token = Request.Headers["Authorization"].ToString();
             var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
@@ -124,7 +126,7 @@ namespace LibraryManagementSystem.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPut("soft-delete/{id}")]
-        public async Task<IActionResult> SoftDeleteCategory(int id)
+        public async Task<IActionResult> SoftDeleteCategoryByAdmin(int id)
         {
             try
             {
@@ -139,7 +141,7 @@ namespace LibraryManagementSystem.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost("api/categories/{id}/books/{bookId}")]
-        public async Task<IActionResult> AssignBookToCategory(int id, int bookId)
+        public async Task<IActionResult> AssignBookToCategoryByAdmin(int id, int bookId)
         {
             try
             {
@@ -169,7 +171,7 @@ namespace LibraryManagementSystem.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpDelete("api/categories/{id}/books/{bookId}")]
-        public async Task<IActionResult> RemoveBookFromCategory(int id, int bookId)
+        public async Task<IActionResult> RemoveBookFromCategoryByAdmin(int id, int bookId)
         {
             try
             {
@@ -182,8 +184,21 @@ namespace LibraryManagementSystem.Controllers
             }
         }
 
+        [Authorize] 
+        [HttpGet("api/books/filter")]
+        public async Task<IActionResult> FilterBooks([FromQuery] int? authorId, [FromQuery] bool? available)
+        {
+            var books = await _categoryService.FilterBooksAsync(authorId, available);
+            return Ok(books);
+        }
 
-
+        [Authorize]
+        [HttpGet("api/books/search")]
+        public async Task<IActionResult> SearchBooks([FromQuery] string? title, [FromQuery] string? authorName)
+        {
+            var books = await _categoryService.SearchBooksAsync(title, authorName);
+            return Ok(books);
+        }
 
     }
 }

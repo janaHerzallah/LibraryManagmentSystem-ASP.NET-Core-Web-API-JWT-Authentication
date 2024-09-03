@@ -17,7 +17,7 @@ namespace LibraryManagmentSystem.Contract.Requests
 
         public DateTime UpdatedDate { get; set; }
 
-        public List<GetAuthorsBookResponse> Books { get; set; }
+        public List<GetBooksDetailsResponse> Books { get; set; }
 
     }
 }

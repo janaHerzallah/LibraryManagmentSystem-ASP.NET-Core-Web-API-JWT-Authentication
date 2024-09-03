@@ -15,8 +15,13 @@ namespace LibraryManagementSystem.Interfaces
         Task SoftDeleteCategoryAsync(int id);
         Task RemoveBookFromCategoryAsync(int categoryId, int bookId);
 
-        Task<IEnumerable<GetAuthorsBookResponse>> GetBooksInCategoryAsync(int categoryId);
+        Task<IEnumerable<GetBooksDetailsResponse>> GetBooksInCategoryAsync(int categoryId);
 
         Task AssignBookToCategoryAsync(int categoryId, int bookId);
+
+        Task<IEnumerable<GetBooksDetailsResponse>> FilterBooksAsync(int? authorId = null, bool? available = null);
+
+
+        Task<IEnumerable<GetBooksDetailsResponse>> SearchBooksAsync(string? title = null, string? authorName = null);
     }
 }
