@@ -9,7 +9,7 @@ namespace LibraryManagmentSystem.Contract.Requests
         public string? Name { get; set; } // no problem if its null 
 
         [EmailAddress]
-        public string? Email { get; set; }
+        public string? Email { get; set; } // ensures it has the @ 
 
         
 

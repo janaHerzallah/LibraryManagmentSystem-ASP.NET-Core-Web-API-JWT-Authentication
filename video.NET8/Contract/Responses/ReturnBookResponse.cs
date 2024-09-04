@@ -13,6 +13,8 @@
 
         public DateTime DateCreated { get; set; }
 
+        public DateTime ClaimedReturnDate { get; set; }
+
         public DateTime DateModified { get; set; }
 
         public int? availableCopies { get; set; }

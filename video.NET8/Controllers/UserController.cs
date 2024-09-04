@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagmentSystem.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     [Authorize] // This attribute will require authentication to access the controller
     public class UserController : ControllerBase
@@ -55,11 +55,10 @@ namespace LibraryManagmentSystem.Controllers
         [HttpGet("GetMembersByAdmin")]
         [Authorize(Roles = "Admin")] // This attribute will require users with the role "Admin" to access the endpoint
 
-        public async Task<IActionResult> GetMembers()
+        public async Task<IActionResult> GetAllMembersByAdmin()
         {
             try
             {
-
                 // get the token fro the authorization header
 
                 var token = Request.Headers["Authorization"].ToString();
@@ -82,11 +81,43 @@ namespace LibraryManagmentSystem.Controllers
             }
         }
 
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetActiveAndInActiveMembersByAdminOnly()
+        {
+            var users = await _userService.GetActiveAndInActiveMembersByAdminOnly();
+            return Ok(users);
+        }
 
+        [HttpPut]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeactivateUserByAdmin(ActivateDeActivateUserRequest request)
+        {
+            try
+            {
+                var response = await _userService.DeactivateUser(request);
+                return Ok(response);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
 
-
-
-
+        [HttpPut]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ReActivateUserByAdmin(ActivateDeActivateUserRequest request)
+        {
+            try
+            {
+                var response = await _userService.ReActivateUser(request);
+                return Ok(response);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
 
     }
 }

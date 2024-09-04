@@ -12,6 +12,8 @@
 
        public DateTime DateModified { get; set; }
 
+        public DateTime ClaimedReturnDate { get; set; }
+
        public int? availableCopies { get; set; }
 
        public string? Title { get; set; }

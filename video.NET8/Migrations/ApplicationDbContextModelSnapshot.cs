@@ -106,10 +106,16 @@ namespace LibraryManagmentSystem.Migrations
                     b.Property<bool>("Active")
                         .HasColumnType("boolean");
 
+                    b.Property<DateTime>("ActualReturnDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int?>("BookId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("BorrowDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ClaimedReturnDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("DateCreated")
@@ -120,9 +126,6 @@ namespace LibraryManagmentSystem.Migrations
 
                     b.Property<int?>("MemberId")
                         .HasColumnType("integer");
-
-                    b.Property<DateTime>("ReturnDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -212,6 +215,12 @@ namespace LibraryManagmentSystem.Migrations
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
+
+                    b.Property<int>("OverDueCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

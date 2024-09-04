@@ -4,5 +4,7 @@
     {
         public int MemberId { get; set; }
         public int BookId { get; set; }
+        public DateTime ClaimedReturnDate { get; set; }
+
     }
 }

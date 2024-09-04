@@ -204,9 +204,10 @@ namespace LibraryManagementSystem.Services
 
         public async Task<IEnumerable<GetBooksDetailsResponse>> FilterBooksAsync(int? authorId = null, bool? available = null)
         {
-            var query = _context.Books.AsQueryable();
+            //is useful when in need to build queries dynamically based on conditions at runtime. 
+            var query = _context.Books.AsQueryable(); // allows to add conditions to the query without executing it immediatly
 
-            if (authorId.HasValue)
+            if (authorId.HasValue) // if the author idis provided 
             {
                 query = query.Where(b => b.AuthorId == authorId.Value);
             }

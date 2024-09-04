@@ -35,12 +35,12 @@ namespace LibraryManagementSystem.Controllers
                     return Unauthorized(new { message = "Invalid token or unauthorized user" });
                 }
 
-                var borrow = await _borrowService.BorrowBook(request.MemberId, request.BookId);
+                var borrow = await _borrowService.BorrowBook(request, tokenValue);
                 return Ok(borrow);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = ex.Message });
+                return NotFound(new { message = ex.Message });
             }
         }
 
@@ -58,12 +58,12 @@ namespace LibraryManagementSystem.Controllers
                     return Unauthorized(new { message = "Invalid token or unauthorized user" });
                 }
 
-                var borrow = await _borrowService.ReturnBook(request.MemberId, request.BookId);
+                var borrow = await _borrowService.ReturnBook(request.MemberId, request.BookId, tokenValue);
                 return Ok(borrow);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = ex.Message });
+                return NotFound(new { message = ex.Message });
             }
         }
 
@@ -81,7 +81,7 @@ namespace LibraryManagementSystem.Controllers
                     return Unauthorized(new { message = "Invalid token or unauthorized user" });
                 }
 
-                var borrows = await _borrowService.GetBorrowedBooksByMember(memberId);
+                var borrows = await _borrowService.GetBorrowedBooksByMember(memberId, tokenValue);
                 return Ok(borrows);
             }
             catch (Exception ex)

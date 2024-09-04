@@ -25,20 +25,36 @@ namespace LibraryManagmentSystem.Controllers
 
         // GET: api/authors
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<GetAllAuthorsResponse>>> GetAllAuthors()
         {
             var authors = await _authorService.GetAllAuthors();
             return Ok(authors);
         }
 
+        [HttpGet]   
+        [Authorize(Roles ="Admin")]
+        public async Task<ActionResult<IEnumerable<GetAllAuthorsResponse>>> GetActiveAndInActiveAuthorsByAdmin()
+        {
+            var authors = await _authorService.GetActiveAndInActiveAuthorsByAdmin();
+            return Ok(authors);
+        }
+
+
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<ActionResult<GetAuthorByIdResponse>> GetAuthorById(int id)
         {
-            
+            try
+            {
                 var author = await _authorService.GetAuthorById(id);
                 return Ok(author);
-       
-            
+            }
+
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
 
         // POST: api/authors
@@ -123,7 +139,6 @@ namespace LibraryManagmentSystem.Controllers
                     return Unauthorized(new { message = "Invalid token or unauthorized user" });
                 }
 
-                
 
                 var result = await _authorService.DeleteAuthorByAdmin(id);
                 if (!result)
@@ -156,16 +171,13 @@ namespace LibraryManagmentSystem.Controllers
 
                
                 await _authorService.SoftDeleteAuthorByAdmin(id);
-                return NoContent();
+                return Ok(new {message = "The Author has been successfully soft deleted"} );
             }
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = ex.Message });
-            }
+            
         }
 
 

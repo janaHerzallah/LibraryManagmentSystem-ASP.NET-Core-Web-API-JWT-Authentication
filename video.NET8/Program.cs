@@ -35,8 +35,13 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddDefaultTokenProviders();
 
 // Configure JWT authentication
+// retrieve the JWT key from appsettings.json
+//converts it to a byte array using asci code 
+// this key is used to sign tokens
 var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]);
 
+
+// use JWT Bearer authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -48,7 +53,7 @@ builder.Services.AddAuthentication(options =>
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
+        IssuerSigningKey = new SymmetricSecurityKey(key), // it would be signed with the same key that was encoded earlier
         ValidateIssuer = false,
         ValidateAudience = false,
         ClockSkew = TimeSpan.Zero // Remove delay of token when expire

@@ -9,6 +9,7 @@ namespace LibraryManagmentSystem.Interfaces
 {
     public interface IAuthorService
     {
+        Task<IEnumerable<GetAllAuthorsResponse>> GetActiveAndInActiveAuthorsByAdmin(); //admin only
         Task<IEnumerable<GetAllAuthorsResponse>> GetAllAuthors();
         Task<GetAuthorByIdResponse> GetAuthorById(int id);
         Task<AddAuthorResponse> AddAuthorByAdmin(AddAuthorRequest author); // admin only

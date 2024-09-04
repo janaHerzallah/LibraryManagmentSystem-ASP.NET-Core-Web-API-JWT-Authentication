@@ -86,23 +86,25 @@ namespace LibraryManagementSystem.Services
 
         private string GenerateToken(User user)
         {
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]); // to sign the token 
 
             
             var tokenDescriptor = new SecurityTokenDescriptor
             {
+                // the subject has two main claims, the name(username) and the role   
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim(ClaimTypes.Name, user.Username),
                     new Claim(ClaimTypes.Role, user.Role.ToString())
                 }),
-                Expires = DateTime.UtcNow.AddMonths(1), //valid for 1 year
+                Expires = DateTime.UtcNow.AddMonths(1), //valid for 1 month
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                //symmetric key to sign the token nad use the sha256 hash function 
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            return tokenHandler.WriteToken(token); // serialize the token into a string 
 
         }
 
@@ -135,5 +137,58 @@ namespace LibraryManagementSystem.Services
             return await _context.Users.Where(u => u.Role == UserRole.Member && u.Active== true).ToListAsync();
         }
 
+
+        public async Task<IEnumerable<User>> GetActiveAndInActiveMembersByAdminOnly()
+        {
+            return await _context.Users.Where(u => u.Role == UserRole.Member).ToListAsync();
+        }
+
+
+        public async Task<ActivateAndDeactivateUserResponse> DeactivateUser(ActivateDeActivateUserRequest request)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == request.UserId);
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found");
+            }
+
+            user.Active = false;
+            user.DateModified = DateTime.UtcNow;
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            return new ActivateAndDeactivateUserResponse
+            {
+                UserId = user.Id,
+                Username = user.Username,
+                Active = user.Active,
+                Message = "User has been successfully deactivated"
+            };
+        }
+
+
+        public async Task<ActivateAndDeactivateUserResponse> ReActivateUser(ActivateDeActivateUserRequest request)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == request.UserId);
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found");
+            }
+
+            user.Active = true;
+            user.DateModified = DateTime.UtcNow;
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            return new ActivateAndDeactivateUserResponse
+            {
+                UserId = user.Id,
+                Username = user.Username,
+                Active = user.Active,
+                Message = "User has been successfully activated"
+            };
+        }
     }
 }

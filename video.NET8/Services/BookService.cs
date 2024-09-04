@@ -1,6 +1,7 @@
 ﻿using LibraryManagementSystem.Contract.Requests;
 using LibraryManagementSystem.Data;
 using LibraryManagementSystem.Domain;
+using LibraryManagmentSystem.Contract.Requests;
 using LibraryManagmentSystem.Contract.Responses;
 using LibraryManagmentSystem.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +25,7 @@ namespace LibraryManagementSystem.Services
            var list =  await _context.Books.Where(b => b.Active == true).ToListAsync();
             return list.Select(b => new GetAllBooksResponse
             {
-                Id = b.Id.ToString(),
+                Id = b.Id,
                 Title = b.Title,
                 AuthorId = b.AuthorId,
                 CategoryId = b.CategoryId,
@@ -77,7 +78,11 @@ namespace LibraryManagementSystem.Services
                 AvailableCopies = book.AvailableCopies ?? 0,
                 TotalCopies = book.TotalCopies ?? 0,
                 DateCreated = DateTime.UtcNow,
-                DateModified = DateTime.UtcNow
+                DateModified = DateTime.UtcNow,
+                Active=true
+                
+
+
             };
 
             bookDataBase.Active = true;
@@ -95,26 +100,43 @@ namespace LibraryManagementSystem.Services
                 LibraryBranchId = bookDataBase.LibraryBranchId,
                 CreatedAt = bookDataBase.DateCreated,
                 ModifiedAt = bookDataBase.DateModified,
-                Id = bookDataBase.Id.ToString()
+                Id = bookDataBase.Id
             };
             return response;
         }
 
-        public async Task<Book> UpdateBookByAdmin(int id, Book updatedBook)
+        public async Task<AddBookResponse> UpdateBookByAdmin(int id, UpdateBookRequest updatedBook)
         {
-            var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id && b.Active);
+            var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id);
             if (book == null)
             {
                 throw new KeyNotFoundException("Book not found or is inactive.");
             }
 
             book.Title = updatedBook.Title;
-            book.Author = updatedBook.Author;
-            // Update other fields as necessary
+            book.AvailableCopies = updatedBook.AvailableCopies;
+            book.TotalCopies = updatedBook.TotalCopies;
+            book.Active= updatedBook.active;
+            book.DateModified = DateTime.UtcNow;
+            book.CategoryId = updatedBook.CategoryId;
+            book.AuthorId = updatedBook.AuthorId;
+            book.LibraryBranchId = updatedBook.LibraryBranchId;
 
             _context.Books.Update(book);
             await _context.SaveChangesAsync();
-            return book;
+            return new  AddBookResponse
+            {
+                Id = book.Id,
+                Title = updatedBook.Title,
+                AvailableCopies = updatedBook.AvailableCopies,
+                TotalCopies = updatedBook.TotalCopies,
+                AuthorId = updatedBook.AuthorId,
+                CategoryId = updatedBook.CategoryId,
+                LibraryBranchId = updatedBook.LibraryBranchId,
+                CreatedAt = book.DateCreated,
+                ModifiedAt = book.DateModified
+            };
+            
         }
 
         public async Task<bool> DeleteBookByAdmin(int id)
@@ -141,6 +163,25 @@ namespace LibraryManagementSystem.Services
             book.Active = false;
             _context.Books.Update(book);
             await _context.SaveChangesAsync();
+        }
+
+
+        public async Task<IEnumerable<GetAllBooksResponse>> GetActiveAndInactive()
+        {
+
+            var list = await _context.Books.ToListAsync();
+            return list.Select(b => new GetAllBooksResponse
+            {
+                Id = b.Id,
+                Title = b.Title,
+                AuthorId = b.AuthorId,
+                CategoryId = b.CategoryId,
+                LibraryBranchId = b.LibraryBranchId,
+                AvailableCopies = b.AvailableCopies,
+                TotalCopies = b.TotalCopies,
+                CreatedAt = b.DateCreated,
+                ModifiedAt = b.DateModified
+            });
         }
     }
 }

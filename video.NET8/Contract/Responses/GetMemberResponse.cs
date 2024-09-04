@@ -11,5 +11,7 @@
 
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+
+        public int OverDueCount { get; set; }
     }
 }

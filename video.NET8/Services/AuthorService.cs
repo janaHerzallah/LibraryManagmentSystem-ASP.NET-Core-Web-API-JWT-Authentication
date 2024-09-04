@@ -4,10 +4,8 @@ using LibraryManagementSystem.Domain;
 using LibraryManagmentSystem.Contract.Requests;
 using LibraryManagmentSystem.Contract.Responses;
 using LibraryManagmentSystem.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace LibraryManagementSystem.Services
 {
@@ -20,6 +18,7 @@ namespace LibraryManagementSystem.Services
         {
             _context = context;
         }
+        
 
         public async Task<IEnumerable<GetAllAuthorsResponse>> GetAllAuthors()
         {
@@ -41,6 +40,24 @@ namespace LibraryManagementSystem.Services
 
         }
 
+        public async Task<IEnumerable<GetAllAuthorsResponse>> GetActiveAndInActiveAuthorsByAdmin()
+        {
+            var list = await _context.Authors
+                                     .Include(a => a.Books) // Include the Books property
+                                     .Select(a => new GetAllAuthorsResponse
+                                     {
+                                         Id = a.Id,
+                                         Name = a.Name,
+                                         Books = a.Books.Select(b => new GetBooksDetailsResponse
+                                         {
+                                             Id = b.Id,
+                                             Title = b.Title
+                                         }).ToList()
+                                     }).ToListAsync();
+            return list;
+
+
+        }
 
         public async Task<GetAuthorByIdResponse> GetAuthorById(int id)
         {
@@ -75,7 +92,9 @@ namespace LibraryManagementSystem.Services
             {
                 Name = author.Name,
                 DateCreated = DateTime.UtcNow,
-                DateModified = DateTime.UtcNow
+                DateModified = DateTime.UtcNow,
+                Active = true
+
             };
 
             _context.Authors.Add(authorDataBase);
@@ -106,7 +125,7 @@ namespace LibraryManagementSystem.Services
                     AuthorId = authorDataBase.Id,
                     DateCreated = DateTime.UtcNow,
                     DateModified = DateTime.UtcNow,
-
+                    Active = true,
 
                     TotalCopies = book.TotalCopies ?? 0,
                     AvailableCopies = book.AvailableCopies ?? 0

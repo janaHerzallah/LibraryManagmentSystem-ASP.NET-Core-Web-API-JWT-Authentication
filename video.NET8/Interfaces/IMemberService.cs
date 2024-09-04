@@ -7,6 +7,8 @@ namespace LibraryManagementSystem.Interfaces
     {
         public interface IMemberService
         {
+
+        Task<IEnumerable<GetMemberResponse>> GetActiveAndInActiveMembersAsync();
             Task<IEnumerable<GetMemberResponse>> GetAllMembersAsync();
             Task<GetMemberResponse> GetMemberByIdAsync(int id);
             Task<GetMemberResponse> AddMemberAsync(AddMemberRequest member);
@@ -14,11 +16,10 @@ namespace LibraryManagementSystem.Interfaces
             Task<bool> DeleteMemberAsync(int id);
             Task SoftDeleteMemberAsync(int id);
 
-            // three get APIS related to the borrow table still needs to be figured out
-
             Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksByMemberAsync(int memberId);
 
             Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksNotReturnedByMemberAsync(int memberId);
+        Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksOverDuedByMember(int memberId);
 
             Task<int> GetOverdueBooksCountByMemberAsync(int memberId);
         }
