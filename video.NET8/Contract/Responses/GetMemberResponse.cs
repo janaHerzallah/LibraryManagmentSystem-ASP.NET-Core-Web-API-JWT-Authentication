@@ -13,5 +13,6 @@
         public DateTime UpdatedAt { get; set; }
 
         public int OverDueCount { get; set; }
+        public int userId { get; set; } 
     }
 }

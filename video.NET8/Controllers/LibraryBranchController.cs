@@ -29,6 +29,13 @@ namespace LibraryManagementSystem.Controllers
             var branches = await _libraryBranchService.GetAllBranchesAsync();
             return Ok(branches);
         }
+        [Authorize(Roles ="Admin")]
+        [HttpGet] // admin and member can access this endpoint
+        public async Task<ActionResult<IEnumerable<GetLibraryBranchResponse>>> GetActiveAndInActiveBranches()
+        {
+            var branches = await _libraryBranchService.GetActiveAndInActiveBranches();
+            return Ok(branches);
+        }
 
         [HttpGet("{id}")]
         [Authorize]

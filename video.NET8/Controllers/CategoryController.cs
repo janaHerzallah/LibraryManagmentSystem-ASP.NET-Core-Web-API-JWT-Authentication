@@ -39,7 +39,21 @@ namespace LibraryManagementSystem.Controllers
             var categories = await _categoryService.GetAllCategoriesAsync();
             return Ok(categories);
         }
+        [Authorize] // members and admins can access this endpoint
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<GetCategoryResponse>>> GetActiveAndInActiveCategories()
+        {
+            var token = Request.Headers["Authorization"].ToString();
+            var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
 
+            if (!await _userService.ValidateAdminsToken(tokenValue))
+            {
+                return Unauthorized(new { message = "Invalid token or unauthorized user" });
+            }
+
+            var categories = await _categoryService.GetAllCategoriesAsync();
+            return Ok(categories);
+        }
         [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<GetCategoryResponse>> GetCategoryById(int id)

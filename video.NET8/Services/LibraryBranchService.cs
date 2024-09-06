@@ -19,6 +19,26 @@ namespace LibraryManagementSystem.Services
             _context = context;
         }
 
+        public async Task<IEnumerable<GetLibraryBranchResponse>> GetActiveAndInActiveBranches()
+        {
+            return await _context.Branches
+                                 .Select(lb => new GetLibraryBranchResponse
+                                 {
+                                     BranchId = lb.Id,
+                                     Name = lb.Name,
+                                     Location = lb.Location,
+                                     Active = lb.Active,
+                                     CreatedDate = lb.DateCreated,
+                                     UpdatedDate = lb.DateModified,
+                                     Books = lb.Books.Select(b => new GetBooksDetailsResponse
+                                     {
+                                         Id = b.Id,
+                                         Title = b.Title
+                                     }).ToList()
+                                 })
+                                 .ToListAsync();
+        }
+
         public async Task<IEnumerable<GetLibraryBranchResponse>> GetAllBranchesAsync()
         {
             return await _context.Branches

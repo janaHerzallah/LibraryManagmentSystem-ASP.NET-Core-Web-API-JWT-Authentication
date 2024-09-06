@@ -70,7 +70,12 @@ namespace LibraryManagementSystem.Services
 
         public async Task<GetMemberResponse> AddMemberAsync(AddMemberRequest member)
         {
-            
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == member.userId);
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found.");
+            }
+
             Member memberDataBase = new Member
             {
                 Name = member.Name,
@@ -78,7 +83,8 @@ namespace LibraryManagementSystem.Services
                 Email = member.Email,
                 Active = true,
                 DateCreated = DateTime.UtcNow,
-                DateModified = DateTime.UtcNow
+                DateModified = DateTime.UtcNow,
+                UserId = member.userId
             };
 
             _context.Members.Add(memberDataBase);
@@ -92,7 +98,8 @@ namespace LibraryManagementSystem.Services
                 Active = memberDataBase.Active,
                 CreatedAt = memberDataBase.DateCreated,
                 UpdatedAt = memberDataBase.DateModified,
-                OverDueCount = memberDataBase.OverDueCount
+                OverDueCount = memberDataBase.OverDueCount,
+                userId = member.userId
             };
         }
 
@@ -108,6 +115,10 @@ namespace LibraryManagementSystem.Services
             member.Email = updatedMember.Email;
             member.Active = updatedMember.Active;
             member.DateModified = DateTime.UtcNow;
+            member.Active = updatedMember.Active;
+            member.OverDueCount = updatedMember.OverDueCount;
+            member.UserId = updatedMember.userId;
+
 
             _context.Members.Update(member);
             await _context.SaveChangesAsync();
@@ -120,7 +131,10 @@ namespace LibraryManagementSystem.Services
                 Active = updatedMember.Active,
                 CreatedAt = member.DateCreated,
                 UpdatedAt = member.DateModified,
-                OverDueCount = member.OverDueCount
+                OverDueCount = member.OverDueCount,
+                userId= updatedMember.userId
+                
+
             };
         }
 
@@ -160,7 +174,8 @@ namespace LibraryManagementSystem.Services
                                      MemberId = b.MemberId,
                                      bookId = b.BookId,
                                      BorrowDate = b.BorrowDate,
-                                     ReturnDate = b.ActualReturnDate,
+                                     ReturnDate = b.ActualReturnDate == DateTime.MinValue ? "Not Returned" : b.ActualReturnDate.ToString("yyyy-MM-dd"),
+
                                      DateCreated = b.DateCreated,
                                      DateModified = b.DateModified,
                                      availableCopies = b.Book.AvailableCopies,
@@ -181,7 +196,8 @@ namespace LibraryManagementSystem.Services
                                      MemberId = b.MemberId,
                                      bookId = b.BookId,
                                      BorrowDate = b.BorrowDate,
-                                     ReturnDate = b.ActualReturnDate,
+                                     ReturnDate = b.ActualReturnDate == DateTime.MinValue ? "Not Returned" : b.ActualReturnDate.ToString("yyyy-MM-dd"),
+
                                      DateCreated = b.DateCreated,
                                      DateModified = b.DateModified,
                                      availableCopies = b.Book.AvailableCopies,
@@ -195,7 +211,7 @@ namespace LibraryManagementSystem.Services
         {
             return await _context.BookBorrows
                                  .Where(b => b.MemberId == memberId && b.Active && 
-                                 b.ClaimedReturnDate< DateTime.UtcNow &&   // 
+                                 b.ClaimedReturnDate< DateTime.UtcNow &&   // if the claimed date has passed 
                                  ( b.ActualReturnDate == DateTime.MinValue)) // if its infinity it means its not returned yet 
                                  .Include(b => b.Book)
                                  .Select(b => new GetBorrowedBooksForAMemberResponse
@@ -203,7 +219,8 @@ namespace LibraryManagementSystem.Services
                                      MemberId = b.MemberId,
                                      bookId = b.BookId,
                                      BorrowDate = b.BorrowDate,
-                                     ReturnDate = b.ActualReturnDate,
+                                     ReturnDate = b.ActualReturnDate == DateTime.MinValue ? "Not Returned" : b.ActualReturnDate.ToString("yyyy-MM-dd"),
+
                                      DateCreated = b.DateCreated,
                                      DateModified = b.DateModified,
                                      availableCopies = b.Book.AvailableCopies,

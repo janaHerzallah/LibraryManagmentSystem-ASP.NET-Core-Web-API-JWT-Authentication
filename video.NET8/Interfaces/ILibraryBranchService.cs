@@ -6,6 +6,7 @@ namespace LibraryManagmentSystem.Interfaces
 {
     public interface ILibraryBranchService
     {
+        Task<IEnumerable<GetLibraryBranchResponse>> GetActiveAndInActiveBranches();
         Task<IEnumerable<GetLibraryBranchResponse>> GetAllBranchesAsync();
         Task<GetLibraryBranchResponse> GetBranchByIdAsync(int id);
         Task<AddLibraryBranchResponse> AddBranchAsync(AddLibraryBranchRequest branch);

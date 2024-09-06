@@ -19,6 +19,24 @@ namespace LibraryManagementSystem.Services
             _context = context;
         }
 
+       public async Task<IEnumerable<GetCategoryResponse>> GetActiveAndInActiveCategoriesAsync()
+       {
+            return await _context.Categories
+                                 .Select(c => new GetCategoryResponse
+                                 {
+                                     Id = c.Id,
+                                     Name = c.Name,
+                                     Description = c.Description,
+                                     CreatedAt = c.DateCreated,
+                                     UpdatedAt = c.DateModified,
+                                     Books = c.Books.Select(b => new GetBooksDetailsResponse
+                                     {
+                                         Id = b.Id,
+                                         Title = b.Title
+                                     }).ToList()
+                                 })
+                                 .ToListAsync();
+        }
         public async Task<IEnumerable<GetCategoryResponse>> GetAllCategoriesAsync()
         {
 

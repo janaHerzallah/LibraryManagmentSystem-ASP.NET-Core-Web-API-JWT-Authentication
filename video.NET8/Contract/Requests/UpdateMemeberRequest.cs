@@ -11,5 +11,9 @@ namespace LibraryManagmentSystem.Contract.Requests
         public string? Email { get; set; }
 
         public bool Active { get; set; } = true; // Default to true
+
+        public int OverDueCount { get; set; }
+
+        public int userId { get; set; } 
     }
 }

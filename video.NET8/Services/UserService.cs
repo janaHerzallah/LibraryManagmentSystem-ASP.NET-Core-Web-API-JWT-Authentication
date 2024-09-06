@@ -31,8 +31,21 @@ namespace LibraryManagementSystem.Services
             {
                 throw new InvalidOperationException("Username already exists");
             }
+            // if the user enters the names in small letter convert the first letter to upper case 
 
-            
+            if (request.Role == "admin" || request.Role == "member")
+            {
+                request.Role = request.Role.Substring(0, 1).ToUpper() + request.Role.Substring(1);
+            }
+
+
+            if (request.Role != "Admin" && request.Role !="Member")
+            {
+                throw new InvalidOperationException("Invalid role. Make sure to enter either Member or Admin.");
+            }
+
+           
+
             var user = new User
             {
                 Username = request.Username,
@@ -47,13 +60,33 @@ namespace LibraryManagementSystem.Services
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            RegisterUserResponse Userresponse = new RegisterUserResponse
+            if (user.Role == UserRole.Member)
             {
+                Member member = new Member
+                {
+                    User = user,
+                    Name = request.MemberName,
+                    Email = request.MemberEmail,
+                    Active = true,
+                    DateCreated = DateTime.UtcNow,
+                    DateModified = DateTime.UtcNow,
+                    UserId = user.Id
+
+                };
+                _context.Members.Add(member);
+                await _context.SaveChangesAsync();
+            }
+           
+
+            RegisterUserResponse Userresponse = new RegisterUserResponse
+            { 
                 Id = user.Id,
                 Username = user.Username,
                 Password = user.Password,
                 Role = user.Role.ToString(),
                 DateCreated = user.DateCreated,
+                MemberName = request.MemberName,
+                MemberEmail = request.MemberEmail
             };
             return Userresponse;
         }
@@ -132,15 +165,35 @@ namespace LibraryManagementSystem.Services
             // if its a user either its an admin or a member it will return true so its authenticated 
             return true;
         }
-        public async Task<IEnumerable<User>> GetMembersByAdminOnly()
+        public async Task<IEnumerable<GetUserResponse>> GetMembersByAdminOnly()
         {
-            return await _context.Users.Where(u => u.Role == UserRole.Member && u.Active== true).ToListAsync();
+            return await _context.Users.Where(u => u.Role == UserRole.Member && u.Active== true)
+                .Select(u => new GetUserResponse
+                {
+                    Id = u.Id,
+                    Username = u.Username,
+                    Password = u.Password,
+                    Role = u.Role,
+                    Token = u.Token,
+                    Active = u.Active
+                })
+                .ToListAsync();
         }
 
 
-        public async Task<IEnumerable<User>> GetActiveAndInActiveMembersByAdminOnly()
+        public async Task<IEnumerable<GetUserResponse>> GetActiveAndInActiveMembersByAdminOnly()
         {
-            return await _context.Users.Where(u => u.Role == UserRole.Member).ToListAsync();
+            return await _context.Users.Where(u => u.Role == UserRole.Member)
+                .Select(u => new GetUserResponse
+                {
+                    Id = u.Id,
+                    Username = u.Username,
+                    Password = u.Password,
+                    Role = u.Role,
+                    Token = u.Token,
+                    Active = u.Active
+
+                }).ToListAsync();
         }
 
 

@@ -7,6 +7,7 @@ namespace LibraryManagementSystem.Interfaces
 {
     public interface ICategoryService
     {
+        Task<IEnumerable<GetCategoryResponse>> GetActiveAndInActiveCategoriesAsync();
         Task<IEnumerable<GetCategoryResponse>> GetAllCategoriesAsync();
         Task<GetCategoryResponse> GetCategoryByIdAsync(int id);
         Task<AddCategoryResponse> AddCategoryAsync(AddCategoryRequest category);

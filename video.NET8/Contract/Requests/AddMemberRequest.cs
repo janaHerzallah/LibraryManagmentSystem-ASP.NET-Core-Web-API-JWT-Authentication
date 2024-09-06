@@ -11,6 +11,7 @@ namespace LibraryManagmentSystem.Contract.Requests
         [EmailAddress]
         public string? Email { get; set; } // ensures it has the @ 
 
+        public int userId { get; set; } // it can be null if there is no user related to it
         
 
 
