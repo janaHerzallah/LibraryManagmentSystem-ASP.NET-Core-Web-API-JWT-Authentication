@@ -53,7 +53,7 @@ namespace LibraryManagmentSystem.Controllers
 
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return StatusCode(500, new { message = ex.Message });
             }
         }
 
@@ -175,7 +175,7 @@ namespace LibraryManagmentSystem.Controllers
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { message = ex.Message });
+                return StatusCode(500, new { message = ex.Message });
             }
             
         }

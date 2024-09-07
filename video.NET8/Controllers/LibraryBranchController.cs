@@ -5,8 +5,6 @@ using LibraryManagmentSystem.Contract.Responses;
 using LibraryManagmentSystem.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace LibraryManagementSystem.Controllers
 {
@@ -24,9 +22,9 @@ namespace LibraryManagementSystem.Controllers
 
         [Authorize]
         [HttpGet] // admin and member can access this endpoint
-        public async Task<ActionResult<IEnumerable<GetLibraryBranchResponse>>> GetAllBranches()
+        public async Task<ActionResult<IEnumerable<GetLibraryBranchResponse>>> GetActiveBranches()
         {
-            var branches = await _libraryBranchService.GetAllBranchesAsync();
+            var branches = await _libraryBranchService.GetActiveBranches();
             return Ok(branches);
         }
         [Authorize(Roles ="Admin")]
@@ -41,61 +39,91 @@ namespace LibraryManagementSystem.Controllers
         [Authorize]
         public async Task<ActionResult<GetLibraryBranchResponse>> GetBranchById(int id)
         {
-            var branch = await _libraryBranchService.GetBranchByIdAsync(id);
-            if (branch == null)
+            try
             {
-                return NotFound();
+                var branch = await _libraryBranchService.GetBranchById(id);
+
+                return Ok(branch);
             }
-            return Ok(branch);
+            catch (Exception EX)
+            {
+                return StatusCode(500,new { message = EX.Message });
+
+            }
+           
         }
 
         [HttpPost]
         [Authorize(Roles = "Admin")] // Only admins can add branches
         public async Task<ActionResult<AddLibraryBranchResponse>> AddBranchByAdmin(AddLibraryBranchRequest branch)
         {
-            var newBranch = await _libraryBranchService.AddBranchAsync(branch);
-            return Ok(newBranch);
+            try
+            {
+                var newBranch = await _libraryBranchService.AddBranchByAdmin(branch);
+                return Ok(newBranch);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+            
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")] // Only admins can update branches
-        public async Task<IActionResult> UpdateBranchByAdmin(int id, UpdateLibraryBranchRequest branch)
+        public async Task<ActionResult<UpdateLibraryBranchResponse>> UpdateBranchByAdmin(int id, UpdateLibraryBranchRequest branch)
         {
-            var updatedBranch = await _libraryBranchService.UpdateBranchAsync(id, branch);
-            if (updatedBranch == null)
+            try
             {
-                return NotFound();
+                var updatedBranch = await _libraryBranchService.UpdateBranchByAdmin(id, branch);
+                return Ok(updatedBranch);
             }
-            return NoContent();
+            
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")] // Only admins can delete branches
         public async Task<IActionResult> DeleteBranch(int id)
         {
-            var result = await _libraryBranchService.DeleteBranchAsync(id);
-            if (!result)
+            try
             {
-                return NotFound();
+                var result = await _libraryBranchService.DeleteBranchByAdmin(id);
+                return Ok(new { message = "The branch has been successfully  deleted" });
             }
-            return NoContent();
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+            
         }
 
-        [HttpPatch("{id}/soft-delete")]
+        [HttpPatch("{id}")]
         [Authorize(Roles = "Admin")] // Only admins can soft delete branches
         public async Task<IActionResult> SoftDeleteBranchByAdmin(int id)
         {
-            await _libraryBranchService.SoftDeleteBranchAsync(id);
-            return NoContent();
+            try
+            {
+                await _libraryBranchService.SoftDeleteBranchByAdmin(id);
+                return Ok(new { message = "The branch has been successfully soft-deleted" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+            
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpPost("assignBookToBranch")]
+        [HttpPost]
         public async Task<IActionResult> AssignBookToBranchByAdmin(int branchId, int bookId)
         {
             try
             {
-                await _libraryBranchService.AssignBookToBranchAsync(branchId, bookId);
+                await _libraryBranchService.AssignBookToBranchByAdmin(branchId, bookId);
                 return Ok(new { message = "Book assigned to branch successfully." });
             }
             catch (KeyNotFoundException ex)
@@ -110,7 +138,7 @@ namespace LibraryManagementSystem.Controllers
         {
             try
             {
-                var books = await _libraryBranchService.GetBooksInBranchAsync(branchId);
+                var books = await _libraryBranchService.GetBooksInBranch(branchId);
                 return Ok(books);
             }
             catch (KeyNotFoundException ex)
@@ -119,18 +147,30 @@ namespace LibraryManagementSystem.Controllers
             }
         }
 
-        [HttpDelete("remove-from-branch")]
+        [HttpDelete]
         [Authorize(Roles = "Admin")] // Ensure only Admin can perform this operation
         public async Task<IActionResult> RemoveBookFromBranchByAdmin(int bookId, int branchId)
         {
-            var result = await _libraryBranchService.RemoveBookFromBranchAsync(bookId, branchId);
 
-            if (!result)
+            try
             {
-                return NotFound(new { Message = "Book not found in the specified branch." });
+                var result = await _libraryBranchService.RemoveBookFromBranchByAdmin(bookId, branchId);
+                if (result)
+                {
+                    return Ok(new { Message = "Book successfully removed from branch." });
+
+                }
+                else
+                {
+                    return NotFound(new { Message = "Book not found in branch." });
+                }
             }
 
-            return Ok(new { Message = "Book successfully removed from branch." });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+
         }
 
     }

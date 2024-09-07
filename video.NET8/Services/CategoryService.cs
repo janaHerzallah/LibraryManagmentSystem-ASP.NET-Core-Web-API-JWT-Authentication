@@ -225,7 +225,7 @@ namespace LibraryManagementSystem.Services
             //is useful when in need to build queries dynamically based on conditions at runtime. 
             var query = _context.Books.AsQueryable(); // allows to add conditions to the query without executing it immediatly
 
-            if (authorId.HasValue) // if the author idis provided 
+            if (authorId.HasValue) // if the author id is provided 
             {
                 query = query.Where(b => b.AuthorId == authorId.Value);
             }
@@ -238,9 +238,7 @@ namespace LibraryManagementSystem.Services
             return await query.Select(b => new GetBooksDetailsResponse
             {
                 Id = b.Id,
-                Title = b.Title,
-                //AuthorId = b.AuthorId,
-               // AvailableCopies = b.AvailableCopies
+                Title = b.Title
             }).ToListAsync();
         }
 
@@ -262,9 +260,8 @@ namespace LibraryManagementSystem.Services
             return await query.Select(b => new GetBooksDetailsResponse
             {
                 Id = b.Id,
-                Title = b.Title,
-               // AuthorName = b.Author.Name,
-              //  AvailableCopies = b.AvailableCopies
+                Title = b.Title
+             
             }).ToListAsync();
         }
 

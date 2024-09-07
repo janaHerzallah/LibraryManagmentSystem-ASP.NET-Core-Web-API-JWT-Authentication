@@ -11,7 +11,7 @@ namespace LibraryManagmentSystem.Interfaces
 
         Task<bool> ValidateAdminsToken(string token);
         Task<bool> ValidateUsersToken(string token);
-        Task<IEnumerable<GetUserResponse>> GetMembersByAdminOnly();
+        Task<IEnumerable<GetUserResponse>> GetActiveMembersByAdminOnly();
 
         Task<IEnumerable<GetUserResponse>> GetActiveAndInActiveMembersByAdminOnly();
         Task<ActivateAndDeactivateUserResponse> DeactivateUser(ActivateDeActivateUserRequest request);

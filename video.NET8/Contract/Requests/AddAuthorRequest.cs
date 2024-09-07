@@ -10,7 +10,8 @@ namespace LibraryManagmentSystem.Contract.Requests
         // and i want to try if the list is reomved from the parameters would it just nt make a book for the author ?
         // if it causes a problem , then i will make a separte request for adding a book
 
-
+        
+        [Required(ErrorMessage = "Name is required.")]
         public string? Name { get; set; }
 
         public List<AddAuthorsBooksRequest> Books { get; set; }

@@ -36,6 +36,8 @@ namespace LibraryManagementSystem.Services
             if (request.Role == "admin" || request.Role == "member")
             {
                 request.Role = request.Role.Substring(0, 1).ToUpper() + request.Role.Substring(1);
+                // convert the first letter to upper case
+                //and the rest of the letters to lower case
             }
 
 
@@ -97,12 +99,7 @@ namespace LibraryManagementSystem.Services
             if (user == null) {
                 throw new InvalidOperationException("Invalid username or password");
             }
-            // i want to think of a way to tell the user if the problem is the username or the password
-            // i think i can do that by checking if the username exists first and then checking if the password is correct
-            // if the username does not exist, i can return a message saying the username does not exist
-            // if the username exists but the password is wrong, i can return a message saying the password is wrong
-            // i can also return a message saying the username and password are wrong if both are wrong
-
+          
             var token = GenerateToken(user);
             user.Token = token;
             user.DateModified = DateTime.UtcNow;
@@ -119,9 +116,9 @@ namespace LibraryManagementSystem.Services
 
         private string GenerateToken(User user)
         {
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]); // to sign the token 
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]); // key is used to sign the token 
 
-            
+            // configuring the token description 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 // the subject has two main claims, the name(username) and the role   
@@ -132,12 +129,12 @@ namespace LibraryManagementSystem.Services
                 }),
                 Expires = DateTime.UtcNow.AddMonths(1), //valid for 1 month
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-                //symmetric key to sign the token nad use the sha256 hash function 
+                //symmetric key to sign the token and use the sha256 hash function 
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token); // serialize the token into a string 
+            return tokenHandler.WriteToken(token); // serialize the token into a string and return it
 
         }
 
@@ -165,7 +162,8 @@ namespace LibraryManagementSystem.Services
             // if its a user either its an admin or a member it will return true so its authenticated 
             return true;
         }
-        public async Task<IEnumerable<GetUserResponse>> GetMembersByAdminOnly()
+        // the authorization is done in the controller since its only allowed by admins 
+        public async Task<IEnumerable<GetUserResponse>> GetActiveMembersByAdminOnly()
         {
             return await _context.Users.Where(u => u.Role == UserRole.Member && u.Active== true)
                 .Select(u => new GetUserResponse

@@ -5,7 +5,7 @@ namespace LibraryManagmentSystem.Contract.Requests
 {
     public class AddMemberRequest 
     {
-        
+        [Required(ErrorMessage = "Name is required.")]
         public string? Name { get; set; } // no problem if its null 
 
         [EmailAddress]

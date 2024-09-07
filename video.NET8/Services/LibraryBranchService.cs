@@ -19,6 +19,7 @@ namespace LibraryManagementSystem.Services
             _context = context;
         }
 
+        //member and admin
         public async Task<IEnumerable<GetLibraryBranchResponse>> GetActiveAndInActiveBranches()
         {
             return await _context.Branches
@@ -39,7 +40,8 @@ namespace LibraryManagementSystem.Services
                                  .ToListAsync();
         }
 
-        public async Task<IEnumerable<GetLibraryBranchResponse>> GetAllBranchesAsync()
+        //member and admin
+        public async Task<IEnumerable<GetLibraryBranchResponse>> GetActiveBranches()
         {
             return await _context.Branches
                                  .Where(lb => lb.Active)
@@ -60,10 +62,14 @@ namespace LibraryManagementSystem.Services
                                  .ToListAsync();
         }
 
-
-        public async Task<GetLibraryBranchResponse> GetBranchByIdAsync(int id)
+        //member and admin
+        public async Task<GetLibraryBranchResponse> GetBranchById(int id)
         {
             var branch= await _context.Branches.Include(lb => lb.Books).FirstOrDefaultAsync(lb => lb.Id == id && lb.Active);
+            if (branch == null)
+            {
+                throw new KeyNotFoundException("Branch not found.");
+            }
             return new GetLibraryBranchResponse
             {
                 BranchId = branch.Id,
@@ -80,8 +86,9 @@ namespace LibraryManagementSystem.Services
             };
         }
 
-        public async Task<AddLibraryBranchResponse> AddBranchAsync(AddLibraryBranchRequest branch)
+        public async Task<AddLibraryBranchResponse> AddBranchByAdmin(AddLibraryBranchRequest branch)
         {
+
 
             LibraryBranch BranchDataBase = new LibraryBranch
             {
@@ -111,13 +118,20 @@ namespace LibraryManagementSystem.Services
             }
             foreach (var book in branch.Books)
             {
+                if (book.TotalCopies < book.AvailableCopies)
+                {
+                    throw new ArgumentException("Total copies have to be equal or more than Available ones");
+                }
+
                 var bookDataBase = new Book
                 {
                     Title = book.Title,
                     DateCreated = DateTime.UtcNow,
                     DateModified = DateTime.UtcNow,
                     LibraryBranchId = BranchDataBase.Id,
-                    Active=true   
+                    Active=true   ,
+                    AvailableCopies = book.AvailableCopies ?? 0,
+                    TotalCopies = book.TotalCopies ?? 0
                 };
 
                 _context.Books.Add(bookDataBase);
@@ -138,9 +152,9 @@ namespace LibraryManagementSystem.Services
 
         }
 
-        public async Task<UpdateLibraryBranchResponse> UpdateBranchAsync(int id, UpdateLibraryBranchRequest branch)
+        public async Task<UpdateLibraryBranchResponse> UpdateBranchByAdmin(int id, UpdateLibraryBranchRequest branch)
         {
-            var existingBranch = await _context.Branches.FirstOrDefaultAsync(lb => lb.Id == id && lb.Active);
+            var existingBranch = await _context.Branches.FirstOrDefaultAsync(lb => lb.Id == id );
             if (existingBranch == null)
             {
                 throw new KeyNotFoundException("Branch not found.");
@@ -149,6 +163,7 @@ namespace LibraryManagementSystem.Services
             existingBranch.Name = branch.Name;
             existingBranch.Location = branch.Location;
             existingBranch.DateModified = DateTime.UtcNow;
+            existingBranch.Active = branch.Active;
 
             _context.Branches.Update(existingBranch);
             await _context.SaveChangesAsync();
@@ -167,12 +182,13 @@ namespace LibraryManagementSystem.Services
             
         }
 
-        public async Task<bool> DeleteBranchAsync(int id)
+        public async Task<bool> DeleteBranchByAdmin(int id)
         {
             var branch = await _context.Branches.FirstOrDefaultAsync(lb => lb.Id == id && lb.Active);
             if (branch == null)
             {
-                return false;
+                throw new KeyNotFoundException("Branch not found.");
+                
             }
 
             _context.Branches.Remove(branch);
@@ -180,7 +196,7 @@ namespace LibraryManagementSystem.Services
             return true;
         }
 
-        public async Task SoftDeleteBranchAsync(int id)
+        public async Task SoftDeleteBranchByAdmin(int id)
         {
             var branch = await _context.Branches.FirstOrDefaultAsync(lb => lb.Id == id && lb.Active);
             if (branch == null)
@@ -193,7 +209,8 @@ namespace LibraryManagementSystem.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<GetBooksDetailsResponse>> GetBooksInBranchAsync(int branchId)
+        // member and admin
+        public async Task<IEnumerable<GetBooksDetailsResponse>> GetBooksInBranch(int branchId)
         {
             var branch = await _context.Branches
                                        .Include(lb => lb.Books)
@@ -212,7 +229,7 @@ namespace LibraryManagementSystem.Services
                                }).ToList();
         }
 
-        public async Task AssignBookToBranchAsync(int branchId, int bookId)
+        public async Task AssignBookToBranchByAdmin(int branchId, int bookId)
         {
             var branch = await _context.Branches.FirstOrDefaultAsync(lb => lb.Id == branchId && lb.Active);
             if (branch == null)
@@ -233,7 +250,7 @@ namespace LibraryManagementSystem.Services
         }
 
 
-        public async Task<bool> RemoveBookFromBranchAsync(int bookId, int branchId)
+        public async Task<bool> RemoveBookFromBranchByAdmin(int bookId, int branchId)
         {
             // Fetch the book by its ID
             var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == bookId && b.LibraryBranchId == branchId);
