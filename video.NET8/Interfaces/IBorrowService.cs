@@ -8,7 +8,7 @@ namespace LibraryManagementSystem.Interfaces
     {
         Task<BorrowBookResponse> BorrowBook(BorrowBookRequest request , string token);
         Task<ReturnBookResponse> ReturnBook(int memberId, int bookId , string token);
-        Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksByMember(int memberId, string token);
+        Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetMembersBorrowedBooks(int memberId, string token);
 
 
     }

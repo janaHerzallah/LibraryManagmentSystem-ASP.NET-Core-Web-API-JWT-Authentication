@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace LibraryManagementSystem.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class CategoryController : ControllerBase
     {
@@ -25,13 +25,13 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [Authorize] // members and admins can access this endpoint
-        [HttpGet("GetActiveCategories")]
-        public async Task<ActionResult<IEnumerable<GetCategoryResponse>>> GetAllCategories()
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<GetCategoryResponse>>> GetActiveCategories()
         {
          
             try
             {
-                var categories = await _categoryService.GetAllCategoriesAsync();
+                var categories = await _categoryService.GetActiveCategories();
                 return Ok(categories);
             }
             catch (Exception ex)
@@ -41,12 +41,12 @@ namespace LibraryManagementSystem.Controllers
            
         }
         [Authorize] // members and admins can access this endpoint
-        [HttpGet("GetActiveAndInActiveCategories")]
-        public async Task<ActionResult<IEnumerable<GetCategoryResponse>>> GetActiveAndInActiveCategories()
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<GetCategoryResponse>>> GetAllCategories()
         {
             try
             {
-                var categories = await _categoryService.GetActiveAndInActiveCategoriesAsync();
+                var categories = await _categoryService.GetAllCategories();
                 return Ok(categories);
             }
             catch (Exception ex)
@@ -56,12 +56,12 @@ namespace LibraryManagementSystem.Controllers
             
         }
         [Authorize]
-        [HttpGet("GetCategoryById/{id}")]
+        [HttpGet("{id}")]
         public async Task<ActionResult<GetCategoryResponse>> GetCategoryById(int id)
         {
             try
             {
-                var category = await _categoryService.GetCategoryByIdAsync(id);
+                var category = await _categoryService.GetCategoryById(id);
                 return Ok(category);
             }
             catch (KeyNotFoundException ex)
@@ -71,8 +71,8 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [Authorize(Roles ="Admin")]
-        [HttpPost("AddCategoryByAdmin")]
-        public async Task<ActionResult<AddCategoryResponse>> AddCategoryByAdmin(AddCategoryRequest request)
+        [HttpPost]
+        public async Task<ActionResult<AddCategoryResponse>> AddCategory(AddCategoryRequest request)
         {
 
             //var token = Request.Headers["Authorization"].ToString();
@@ -83,13 +83,13 @@ namespace LibraryManagementSystem.Controllers
             //    return Unauthorized(new { message = "Invalid token or unauthorized user" });
             //}
 
-            var category = await _categoryService.AddCategoryAsync(request);
+            var category = await _categoryService.AddCategory(request);
             return Ok(category);
         }
 
         [Authorize(Roles = "Admin")] //it actually works without the logic of auhtentication down below
-        [HttpPut("UpdateCategoryByAdmin/{id}")]
-        public async Task<ActionResult<UpdateCategoryResponse>> UpdateCategoryByAdmin(int id, UpdateCategoryRequest request)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<UpdateCategoryResponse>> UpdateCategory(int id, UpdateCategoryRequest request)
         {
             //var token = Request.Headers["Authorization"].ToString();
             //var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
@@ -101,7 +101,7 @@ namespace LibraryManagementSystem.Controllers
 
             try
             {
-                var category = await _categoryService.UpdateCategoryAsync(id, request);
+                var category = await _categoryService.UpdateCategory(id, request);
                 return Ok(category);
             }
             catch (KeyNotFoundException ex)
@@ -111,8 +111,8 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [Authorize]
-        [HttpDelete("DeleteCategoryByAdmin/{id}")]
-        public async Task<IActionResult> DeleteCategoryByAdmin(int id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteCategory(int id)
         {
             var success = await _categoryService.DeleteCategoryAsync(id);
             if (!success)
@@ -123,12 +123,12 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpPut("SoftDeleteCategoryByAdmin/{id}")]
-        public async Task<IActionResult> SoftDeleteCategoryByAdmin(int id)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> SoftDeleteCategory(int id)
         {
             try
             {
-                await _categoryService.SoftDeleteCategoryAsync(id);
+                await _categoryService.SoftDeleteCategory(id);
                 return Ok(new { message = "Category has been soft-deleted successfully" });
             }
             catch (KeyNotFoundException ex)
@@ -138,12 +138,12 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpPost("api/category/{id}/books/{bookId}")]
-        public async Task<IActionResult> AssignBookToCategoryByAdmin(int id, int bookId)
+        [HttpPost("{id}/{bookId}")]
+        public async Task<IActionResult> AssignBookToCategory(int id, int bookId)
         {
             try
             {
-                await _categoryService.AssignBookToCategoryAsync(id, bookId);
+                await _categoryService.AssignBookToCategory(id, bookId);
                 return Ok("Book assigned to category successfully.");
             }
             catch (KeyNotFoundException ex)
@@ -153,12 +153,12 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [Authorize] //admin and members can access this endpoint
-        [HttpGet("api/category/{id}/books")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetBooksInCategory(int id)
         {
             try
             {
-                var books = await _categoryService.GetBooksInCategoryAsync(id);
+                var books = await _categoryService.GetBooksInCategory(id);
                 return Ok(books);
             }
             catch (KeyNotFoundException ex)
@@ -168,7 +168,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpDelete("api/category/{id}/books/{bookId}")]
+        [HttpDelete("{id}/{bookId}")]
         public async Task<IActionResult> RemoveBookFromCategoryByAdmin(int id, int bookId)
         {
             try
@@ -183,18 +183,18 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [Authorize] 
-        [HttpGet("filterBYAuthorID/Availability")]
+        [HttpGet]
         public async Task<IActionResult> FilterBooks([FromQuery] int? authorId, [FromQuery] bool? available)
         {
-            var books = await _categoryService.FilterBooksAsync(authorId, available);
+            var books = await _categoryService.FilterBooks(authorId, available);
             return Ok(books);
         }
 
         [AllowAnonymous] //let anyone search through our books
-        [HttpGet("searchBYBookTitle/AuthorName")]
+        [HttpGet]
         public async Task<IActionResult> SearchBooks([FromQuery] string? title, [FromQuery] string? authorName)
         {
-            var books = await _categoryService.SearchBooksAsync(title, authorName);
+            var books = await _categoryService.SearchBooks(title, authorName);
             return Ok(books);
         }
 

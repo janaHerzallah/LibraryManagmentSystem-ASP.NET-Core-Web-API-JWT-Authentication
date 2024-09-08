@@ -58,9 +58,24 @@ namespace LibraryManagementSystem.Services
                 throw new Exception("Book not available for borrowing.");
             }
 
+            // **Restriction: Claimed return date must be at least 2 days ahead**
+            if ((request.ClaimedReturnDate - DateTime.UtcNow).TotalDays < 2)
+            {
+                throw new ArgumentException("The claimed return date must be at least 2 days from now.");
+            }
+
             if ((request.ClaimedReturnDate - DateTime.UtcNow).TotalDays > 15)
             {
                 throw new ArgumentException("You can't borrow a book for more than 15 days.");
+            }
+
+            // **Check if the book was already borrowed by the member and is still active (i.e., not returned)**
+            var activeBorrowRecord = await _context.BookBorrows
+                .FirstOrDefaultAsync(b => b.BookId == request.BookId && b.MemberId == request.MemberId && b.Active);
+
+            if (activeBorrowRecord != null)
+            {
+                throw new InvalidOperationException("You already have an active borrow record for this book.");
             }
 
             // All conditions met, proceed with borrowing the book
@@ -122,7 +137,7 @@ namespace LibraryManagementSystem.Services
             var borrowRecord = await _context.BookBorrows.FirstOrDefaultAsync(b => b.MemberId == memberId && b.BookId == bookId && b.Active);
             if (borrowRecord == null)
             {
-                throw new Exception("Borrow record not found.");
+                throw new Exception("Borrow record not found or its already returned");
             }
 
             var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == bookId && b.Active);
@@ -132,7 +147,7 @@ namespace LibraryManagementSystem.Services
             }
 
             borrowRecord.ActualReturnDate = DateTime.UtcNow;
-            borrowRecord.Active = true;
+            borrowRecord.Active = false; // set active to false means its not borrowed any more so its returned
             book.AvailableCopies += 1;
             book.DateModified = DateTime.UtcNow;
 
@@ -152,12 +167,7 @@ namespace LibraryManagementSystem.Services
                 }
             }
 
-            // to return the return date in a suitable way:
-            //if (borrowRecord.ActualReturnDate == DateTime.MinValue )
-            //{
-            //    string returnDate = "NOT RETURNED";
-
-            //}
+          
 
             return new ReturnBookResponse
             {
@@ -175,9 +185,9 @@ namespace LibraryManagementSystem.Services
         }
 
 
-        public async Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksByMember(int memberId, string token)
+        public async Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetMembersBorrowedBooks(int memberId, string token)
         {
-            // get all borrowed books either its retruned or not
+            // get all borrowed books either its retruned or not // so even if its active or not
             // validate if its an admin or if its a member it should be the same member requesting the service for 
 
 
@@ -189,7 +199,7 @@ namespace LibraryManagementSystem.Services
             {
                 var member = await _context.Members
                     .Include(m => m.User)
-                    .FirstOrDefaultAsync(m => m.Id == memberId && m.Active);
+                    .FirstOrDefaultAsync(m => m.Id == memberId );
 
                 if (member == null)
                 {
@@ -203,7 +213,7 @@ namespace LibraryManagementSystem.Services
             }
 
             return await _context.BookBorrows
-                         .Where(b => b.MemberId == memberId && b.Active)
+                         .Where(b => b.MemberId == memberId )
                          .Include(b => b.Book)
                          .Select(b => new GetBorrowedBooksForAMemberResponse
                          {

@@ -26,17 +26,17 @@ namespace LibraryManagmentSystem.Controllers
         // GET: api/authors
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult<IEnumerable<GetAllAuthorsResponse>>> GetAllAuthors()
+        public async Task<ActionResult<IEnumerable<GetAllAuthorsResponse>>> GetActiveAuthors()
         {
-            var authors = await _authorService.GetAllAuthors();
+            var authors = await _authorService.GetActiveAuthors();
             return Ok(authors);
         }
 
         [HttpGet]   
         [Authorize(Roles ="Admin")]
-        public async Task<ActionResult<IEnumerable<GetAllAuthorsResponse>>> GetActiveAndInActiveAuthorsByAdmin()
+        public async Task<ActionResult<IEnumerable<GetAllAuthorsResponse>>> GetAllAuthors()
         {
-            var authors = await _authorService.GetActiveAndInActiveAuthorsByAdmin();
+            var authors = await _authorService.GetAllAuthors();
             return Ok(authors);
         }
 
@@ -61,7 +61,7 @@ namespace LibraryManagmentSystem.Controllers
         [HttpPost]
         [Authorize(Roles = "Admin")] // This attribute will require users with the role "Admin" to access the endpoint
 
-        public async Task<ActionResult<AddAuthorResponse>> AddAuthorByAdmin([FromBody] AddAuthorRequest authorRequest)
+        public async Task<ActionResult<AddAuthorResponse>> AddAuthor([FromBody] AddAuthorRequest authorRequest)
         {
             try
             {
@@ -82,7 +82,7 @@ namespace LibraryManagmentSystem.Controllers
                 {
                     return BadRequest("Author data is required.");
                 }
-                var authorResponse = await _authorService.AddAuthorByAdmin(authorRequest);
+                var authorResponse = await _authorService.AddAuthor(authorRequest);
                 return Ok(authorResponse);
             }
 
@@ -95,7 +95,7 @@ namespace LibraryManagmentSystem.Controllers
         // PUT: api/authors/{id}
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<UpdateAuthorResponse>> UpdateAuthorByAdmin(int id, [FromBody] UpdateAuthorRequest authorRequest)
+        public async Task<ActionResult<UpdateAuthorResponse>> UpdateAuthor(int id, [FromBody] UpdateAuthorRequest authorRequest)
         {
             try
             {
@@ -112,7 +112,7 @@ namespace LibraryManagmentSystem.Controllers
                     return BadRequest("Author data is required.");
                 }
 
-                var authorResponse = await _authorService.UpdateAuthorByAdmin(id, authorRequest);
+                var authorResponse = await _authorService.UpdateAuthor(id, authorRequest);
                 return Ok(authorResponse);
             }
             catch (Exception ex)
@@ -122,12 +122,10 @@ namespace LibraryManagmentSystem.Controllers
         }
 
 
-
-
         // DELETE: api/authors/{id}
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteAuthorByAdmin(int id)
+        public async Task<IActionResult> DeleteAuthor(int id)
         {
             try
             {
@@ -140,7 +138,7 @@ namespace LibraryManagmentSystem.Controllers
                 }
 
 
-                var result = await _authorService.DeleteAuthorByAdmin(id);
+                var result = await _authorService.DeleteAuthor(id);
                 if (!result)
                 {
                     return NotFound(new { message = "Author not found or is inactive." });
@@ -157,7 +155,7 @@ namespace LibraryManagmentSystem.Controllers
         // PATCH: api/authors/{id}/softdelete
         [HttpPatch("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> SoftDeleteAuthorByAdmin(int id)
+        public async Task<IActionResult> SoftDeleteAuthor(int id)
         {
             try
             {
@@ -170,7 +168,7 @@ namespace LibraryManagmentSystem.Controllers
                 }
 
                
-                await _authorService.SoftDeleteAuthorByAdmin(id);
+                await _authorService.SoftDeleteAuthor(id);
                 return Ok(new {message = "The Author has been successfully soft deleted"} );
             }
             catch (KeyNotFoundException ex)

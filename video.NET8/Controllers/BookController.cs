@@ -35,10 +35,10 @@ namespace LibraryManagmentSystem.Controllers
 
         [HttpGet]
         [Authorize(Roles ="Admin")]
-        public async Task<ActionResult<IEnumerable<GetAllBooksResponse>>> GetActiveAndInActiveBooksByAdmin() //generic : it requires a special type
+        public async Task<ActionResult<IEnumerable<GetAllBooksResponse>>> GetAllBooks() //generic : it requires a special type
         { // IEnumerable is a collection of items that can be iterated over
 
-            var books = await _bookService.GetActiveAndInactive();
+            var books = await _bookService.GetAllBooks();
             return Ok(books);
 
         }
@@ -46,10 +46,10 @@ namespace LibraryManagmentSystem.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult<IEnumerable<GetAllBooksResponse>>> GetAllBooks() //generic : it requires a special type
+        public async Task<ActionResult<IEnumerable<GetAllBooksResponse>>> GetActiveBooks() //generic : it requires a special type
         { // IEnumerable is a collection of items that can be iterated over
             
-            var books = await _bookService.GetAllBooks();
+            var books = await _bookService.GetActiveBooks();
             return Ok(books);
            
         }
@@ -73,9 +73,9 @@ namespace LibraryManagmentSystem.Controllers
 
 
 
-        [HttpPost("AddBookByAdmin")]
+        [HttpPost]
         //[Authorize(Roles = "Admin")] // This attribute will require users with the role "Admin" to access the endpoint
-        public async Task<ActionResult<AddBookResponse>> AddBookByAdmin([FromBody] AddBookRequest book)
+        public async Task<ActionResult<AddBookResponse>> AddBook([FromBody] AddBookRequest book)
         {
             try
             {
@@ -91,7 +91,7 @@ namespace LibraryManagmentSystem.Controllers
                     return Unauthorized(new { message = "Invalid token or unauthorized user" });
                 }
 
-                var createdBook = await _bookService.AddBookByAdmin(book);
+                var createdBook = await _bookService.AddBook(book);
                 return Ok(createdBook);
             }
 
@@ -105,11 +105,11 @@ namespace LibraryManagmentSystem.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<AddBookResponse>> UpdateBookByAdmin(int id, [FromBody] UpdateBookRequest updatedBook)
+        public async Task<ActionResult<AddBookResponse>> UpdateBook(int id, [FromBody] UpdateBookRequest updatedBook)
         {
             try
             {
-                var book = await _bookService.UpdateBookByAdmin(id, updatedBook);
+                var book = await _bookService.UpdateBook(id, updatedBook);
                 return Ok(book);
             }
             catch (KeyNotFoundException ex)
@@ -121,9 +121,9 @@ namespace LibraryManagmentSystem.Controllers
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> DeleteBookByAdmin(int id)
+        public async Task<ActionResult> DeleteBook(int id)
         {
-            var success = await _bookService.DeleteBookByAdmin(id);
+            var success = await _bookService.DeleteBook(id);
             if (!success)
             {
                 return NotFound(new { message = "Book not found or is inactive." });
@@ -134,11 +134,11 @@ namespace LibraryManagmentSystem.Controllers
         // PATCH: api/Books/{id}/soft-delete
         [HttpPatch("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> SoftDeleteBookByAdmin(int id)
+        public async Task<ActionResult> SoftDeleteBook(int id)
         {
             try
             {
-                await _bookService.SoftDeleteBookByAdmin(id);
+                await _bookService.SoftDeleteBook(id);
                 return Ok(new {message = "The book has been successfully soft deleted "});
             }
             catch (KeyNotFoundException ex)

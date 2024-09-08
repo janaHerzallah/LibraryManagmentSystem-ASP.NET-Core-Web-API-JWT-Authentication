@@ -9,12 +9,12 @@ namespace LibraryManagmentSystem.Interfaces
 {
     public interface IBookService
     {
-        Task<IEnumerable<GetAllBooksResponse>> GetActiveAndInactive(); //admin only
-        Task<IEnumerable<GetAllBooksResponse>> GetAllBooks();
+        Task<IEnumerable<GetAllBooksResponse>> GetAllBooks(); //admin only
+        Task<IEnumerable<GetAllBooksResponse>> GetActiveBooks();
         Task<GetBookByIdResponse> GetBookById(int id);
-        Task<AddBookResponse> AddBookByAdmin(AddBookRequest book);// admin only
-        Task<AddBookResponse> UpdateBookByAdmin(int id, UpdateBookRequest updatedBook); // admin only
-        Task<bool> DeleteBookByAdmin(int id); // admin only
-        Task SoftDeleteBookByAdmin(int id); // admin only
+        Task<AddBookResponse> AddBook(AddBookRequest book);// admin only
+        Task<AddBookResponse> UpdateBook(int id, UpdateBookRequest updatedBook); // admin only
+        Task<bool> DeleteBook(int id); // admin only
+        Task SoftDeleteBook(int id); // admin only
     }
 }

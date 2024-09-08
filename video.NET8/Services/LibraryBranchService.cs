@@ -20,7 +20,7 @@ namespace LibraryManagementSystem.Services
         }
 
         //member and admin
-        public async Task<IEnumerable<GetLibraryBranchResponse>> GetActiveAndInActiveBranches()
+        public async Task<IEnumerable<GetLibraryBranchResponse>> GetAllBranches()
         {
             return await _context.Branches
                                  .Select(lb => new GetLibraryBranchResponse
@@ -65,7 +65,7 @@ namespace LibraryManagementSystem.Services
         //member and admin
         public async Task<GetLibraryBranchResponse> GetBranchById(int id)
         {
-            var branch= await _context.Branches.Include(lb => lb.Books).FirstOrDefaultAsync(lb => lb.Id == id && lb.Active);
+            var branch= await _context.Branches.Include(lb => lb.Books).FirstOrDefaultAsync(lb => lb.Id == id);
             if (branch == null)
             {
                 throw new KeyNotFoundException("Branch not found.");
@@ -86,7 +86,7 @@ namespace LibraryManagementSystem.Services
             };
         }
 
-        public async Task<AddLibraryBranchResponse> AddBranchByAdmin(AddLibraryBranchRequest branch)
+        public async Task<AddLibraryBranchResponse> AddBranch(AddLibraryBranchRequest branch)
         {
 
 
@@ -152,7 +152,7 @@ namespace LibraryManagementSystem.Services
 
         }
 
-        public async Task<UpdateLibraryBranchResponse> UpdateBranchByAdmin(int id, UpdateLibraryBranchRequest branch)
+        public async Task<UpdateLibraryBranchResponse> UpdateBranch(int id, UpdateLibraryBranchRequest branch)
         {
             var existingBranch = await _context.Branches.FirstOrDefaultAsync(lb => lb.Id == id );
             if (existingBranch == null)
@@ -182,7 +182,7 @@ namespace LibraryManagementSystem.Services
             
         }
 
-        public async Task<bool> DeleteBranchByAdmin(int id)
+        public async Task<bool> DeleteBranch(int id)
         {
             var branch = await _context.Branches.FirstOrDefaultAsync(lb => lb.Id == id && lb.Active);
             if (branch == null)
@@ -196,7 +196,7 @@ namespace LibraryManagementSystem.Services
             return true;
         }
 
-        public async Task SoftDeleteBranchByAdmin(int id)
+        public async Task SoftDeleteBranch(int id)
         {
             var branch = await _context.Branches.FirstOrDefaultAsync(lb => lb.Id == id && lb.Active);
             if (branch == null)
@@ -229,7 +229,7 @@ namespace LibraryManagementSystem.Services
                                }).ToList();
         }
 
-        public async Task AssignBookToBranchByAdmin(int branchId, int bookId)
+        public async Task AssignBookToBranch(int branchId, int bookId)
         {
             var branch = await _context.Branches.FirstOrDefaultAsync(lb => lb.Id == branchId && lb.Active);
             if (branch == null)
@@ -250,7 +250,7 @@ namespace LibraryManagementSystem.Services
         }
 
 
-        public async Task<bool> RemoveBookFromBranchByAdmin(int bookId, int branchId)
+        public async Task<bool> RemoveBookFromBranch(int bookId, int branchId)
         {
             // Fetch the book by its ID
             var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == bookId && b.LibraryBranchId == branchId);

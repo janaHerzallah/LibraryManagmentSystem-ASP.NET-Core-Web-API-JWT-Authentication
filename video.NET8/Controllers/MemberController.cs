@@ -26,16 +26,16 @@ namespace LibraryManagementSystem.Controllers
         // since there is an admin validation in the method it will outweight the authorize attribute 
         // and only allow admins to access the method
         [HttpGet]
-        [Authorize (Roles ="Admin")]
-        public async Task<ActionResult<IEnumerable<Member>>> GetActiveAndInActiveMembersByAdmin()
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<IEnumerable<Member>>> GetAllMembers()
         {
             try
             {
-           
-                var members = await _memberService.GetActiveAndInActiveMembersAsync();
+
+                var members = await _memberService.GetAllMembers();
                 return Ok(members);
             }
-            catch (KeyNotFoundException  ex)
+            catch (KeyNotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
@@ -43,29 +43,29 @@ namespace LibraryManagementSystem.Controllers
 
 
         [HttpGet]
-        [Authorize(Roles ="Admin")]
-        public async Task<ActionResult<IEnumerable<Member>>> GetActiveMembersByAdmin()
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<IEnumerable<Member>>> GetActiveMembers()
         {
             try
-            { 
-                var members = await _memberService.GetAllMembersAsync();
+            {
+                var members = await _memberService.GetActiveMembers();
                 return Ok(members);
             }
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
-            
+
         }
 
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<Member>> GetMemberByIdByAdmin(int id)
+        public async Task<ActionResult<Member>> GetMemberById(int id)
         {
             try
             {
 
-                var member = await _memberService.GetMemberByIdAsync(id);
+                var member = await _memberService.GetMemberById(id);
                 return Ok(member);
             }
             catch (KeyNotFoundException ex)
@@ -76,36 +76,36 @@ namespace LibraryManagementSystem.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<GetMemberResponse>> AddMemberByAdmin([FromBody] AddMemberRequest member)
+        public async Task<ActionResult<GetMemberResponse>> AddMember([FromBody] AddMemberRequest member)
         {
-        
-            var addedMember = await _memberService.AddMemberAsync(member);
+
+            var addedMember = await _memberService.AddMember(member);
             return Ok(addedMember);
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<GetMemberResponse>> UpdateMemberByAdmin(int id, [FromBody] UpdateMemeberRequest updatedMember)
+        public async Task<ActionResult<GetMemberResponse>> UpdateMember(int id, [FromBody] UpdateMemeberRequest updatedMember)
         {
-           try
+            try
             {
-                var member = await _memberService.UpdateMemberAsync(id, updatedMember);
+                var member = await _memberService.UpdateMember(id, updatedMember);
                 return Ok(member);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, ex.Message);
             }
-            
+
         }
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> DeleteMemberByAdmin(int id)
+        public async Task<ActionResult> DeleteMember(int id)
         {
             try
             {
-                var result = await _memberService.DeleteMemberAsync(id);
+                var result = await _memberService.DeleteMember(id);
                 if (!result)
                 {
                     return NotFound(new { message = "Member not found." });
@@ -124,23 +124,23 @@ namespace LibraryManagementSystem.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> SoftDeleteMemberByAdmin(int id)
+        public async Task<ActionResult> SoftDeleteMember(int id)
         {
             try
             {
-                await _memberService.SoftDeleteMemberAsync(id);
-                return Ok(new {message = "The member got successfully soft-deleted , you can update its status from the update method"});
+                await _memberService.SoftDeleteMember(id);
+                return Ok(new { message = "The member got successfully soft-deleted , you can update its status from the update method" });
             }
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
-            
+
         }
 
-        [HttpGet("borrowed-books")]
+        [HttpGet("{id}")]
         [Authorize]
-        public async Task<IActionResult> GetBorrowedBooksByMember(int id)
+        public async Task<IActionResult> GetMembersAllBorrowedBooks(int id)
         {
             try
             {
@@ -149,7 +149,7 @@ namespace LibraryManagementSystem.Controllers
                 var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
                
 
-                var books = await _memberService.GetBorrowedBooksByMemberAsync(id, tokenValue);
+                var books = await _memberService.GetMembersAllBorrowedBooks(id, tokenValue);
                 return Ok(books);
             }
             catch (Exception ex)
@@ -159,9 +159,9 @@ namespace LibraryManagementSystem.Controllers
             
         }
 
-        [HttpGet("borrowed-books/NOTReturnedYet")]
+        [HttpGet("{id}")]
         [Authorize]
-        public async Task<IActionResult> GetBorrowedBooksNotReturnedByMember(int id)
+        public async Task<IActionResult> GetNotReturnedBooks(int id)
         {
             try
             {
@@ -170,7 +170,7 @@ namespace LibraryManagementSystem.Controllers
                 var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
                 
 
-                var books = await _memberService.GetBorrowedBooksNotReturnedByMemberAsync(id, tokenValue);
+                var books = await _memberService.GetNotReturnedBooks(id, tokenValue);
                 return Ok(books);
             }
             catch (KeyNotFoundException ex)
@@ -179,9 +179,9 @@ namespace LibraryManagementSystem.Controllers
             }
             
         }
-        [HttpGet("borrowed-books/overdue")]
+        [HttpGet("{id}")]
         [Authorize]
-        public async Task<IActionResult> GetBorrowedBooksOverDueByMember(int id)
+        public async Task<IActionResult> GetOverDueBorrowedBooks(int id)
         {
             try
             {
@@ -190,7 +190,7 @@ namespace LibraryManagementSystem.Controllers
                 var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
              
 
-                var books = await _memberService.GetBorrowedBooksOverDuedByMember(id, tokenValue);
+                var books = await _memberService.GetOverDueBorrowedBooks(id, tokenValue);
                 return Ok(books);
             }
             catch (KeyNotFoundException ex)
@@ -200,9 +200,9 @@ namespace LibraryManagementSystem.Controllers
 
         }
 
-        [HttpGet("borrowed-books/overdue-count")]
+        [HttpGet("{id}")]
         [Authorize]
-        public async Task<IActionResult> GetOverdueBooksCountByMember(int id)
+        public async Task<IActionResult> GetOverdueBooksCount(int id)
         {
             try
             {
@@ -211,7 +211,7 @@ namespace LibraryManagementSystem.Controllers
                 var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
                
 
-                var count = await _memberService.GetOverdueBooksCountByMemberAsync(id, tokenValue);
+                var count = await _memberService.GetOverdueBooksCount(id, tokenValue);
                 return Ok(count);
             }
             catch (KeyNotFoundException ex)

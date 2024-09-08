@@ -22,7 +22,7 @@ namespace LibraryManagementSystem.Services
 
         
 
-        public async Task<IEnumerable<GetMemberResponse>> GetActiveAndInActiveMembersAsync() { 
+        public async Task<IEnumerable<GetMemberResponse>> GetAllMembers() { 
             var member = await _context.Members.ToListAsync();
 
             return member.Select(m => new GetMemberResponse
@@ -36,7 +36,7 @@ namespace LibraryManagementSystem.Services
                 OverDueCount = m.OverDueCount
             });
         }
-        public async Task<IEnumerable<GetMemberResponse>> GetAllMembersAsync()
+        public async Task<IEnumerable<GetMemberResponse>> GetActiveMembers()
         {
            var member= await _context.Members.Where(m => m.Active).ToListAsync();
 
@@ -52,9 +52,9 @@ namespace LibraryManagementSystem.Services
             });
         }
 
-        public async Task<GetMemberResponse> GetMemberByIdAsync(int id)
+        public async Task<GetMemberResponse> GetMemberById(int id)
         {
-            var member = await _context.Members.FirstOrDefaultAsync(m => m.Id == id && m.Active);
+            var member = await _context.Members.FirstOrDefaultAsync(m => m.Id == id);
             if (member == null)
             {
                 throw new KeyNotFoundException("Member not found or is inactive.");
@@ -71,7 +71,7 @@ namespace LibraryManagementSystem.Services
             };
         }
 
-        public async Task<GetMemberResponse> AddMemberAsync(AddMemberRequest member)
+        public async Task<GetMemberResponse> AddMember(AddMemberRequest member)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == member.userId);
             if (user == null)
@@ -106,7 +106,7 @@ namespace LibraryManagementSystem.Services
             };
         }
 
-        public async Task<GetMemberResponse> UpdateMemberAsync(int id, UpdateMemeberRequest updatedMember)
+        public async Task<GetMemberResponse> UpdateMember(int id, UpdateMemeberRequest updatedMember)
         {
             var member = await _context.Members.FirstOrDefaultAsync(m => m.Id == id);
             if (member == null)
@@ -141,7 +141,7 @@ namespace LibraryManagementSystem.Services
             };
         }
 
-        public async Task<bool> DeleteMemberAsync(int id)
+        public async Task<bool> DeleteMember(int id)
         {
             var member = await _context.Members.FirstOrDefaultAsync(m => m.Id == id && m.Active);
             if (member == null)
@@ -155,7 +155,7 @@ namespace LibraryManagementSystem.Services
             return true;
         }
 
-        public async Task SoftDeleteMemberAsync(int id)
+        public async Task SoftDeleteMember(int id)
         {
             var member = await _context.Members.FirstOrDefaultAsync(m => m.Id == id && m.Active);
             if (member == null)
@@ -167,8 +167,10 @@ namespace LibraryManagementSystem.Services
             _context.Members.Update(member);
             await _context.SaveChangesAsync();
         }
-        public async Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksByMemberAsync(int memberId , string token)
+        public async Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetMembersAllBorrowedBooks(int memberId , string token)
         {
+            // get currently borrowed books --> active books and inactive books
+
             // Check if the token belongs to an admin
             var isAdmin = await _userService.ValidateAdminsToken(token);
 
@@ -190,8 +192,13 @@ namespace LibraryManagementSystem.Services
                 }
             }
 
-                return await _context.BookBorrows
-                                 .Where(b => b.MemberId == memberId && b.Active)
+            if (memberId == 0)
+            {
+                throw new Exception("Please Enter Valied Member Id");
+            }
+
+            return await _context.BookBorrows
+                                 .Where(b => b.MemberId == memberId)
                                  .Include(b => b.Book)
                                  .Select(b => new GetBorrowedBooksForAMemberResponse
                                  {
@@ -209,8 +216,10 @@ namespace LibraryManagementSystem.Services
                                  .ToListAsync();
         }
 
-
-        public async Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksNotReturnedByMemberAsync(int memberId , string token)
+        // set active to false means its not borrowed any more so its returned
+        // active = true = borrowed
+        //active = false = returned 
+        public async Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetNotReturnedBooks(int memberId , string token)
         {
             // Check if the token belongs to an admin
             var isAdmin = await _userService.ValidateAdminsToken(token);
@@ -220,7 +229,8 @@ namespace LibraryManagementSystem.Services
             {
                 var member = await _context.Members
                     .Include(m => m.User)
-                    .FirstOrDefaultAsync(m => m.Id == memberId && m.Active);
+                    .FirstOrDefaultAsync(m => m.Id == memberId && 
+                    m.Active);
 
                 if (member == null)
                 {
@@ -232,6 +242,8 @@ namespace LibraryManagementSystem.Services
                     throw new UnauthorizedAccessException("Unauthorized access. You can only return the book for yourself not for anyone else.");
                 }
             }
+
+            // not returned = > active = true 
 
             return await _context.BookBorrows
                                  .Where(b => b.MemberId == memberId && b.Active && ( b.ActualReturnDate == DateTime.MinValue))
@@ -252,7 +264,7 @@ namespace LibraryManagementSystem.Services
                                  .ToListAsync();
         }
 
-        public async Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksOverDuedByMember(int memberId , string token)
+        public async Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetOverDueBorrowedBooks(int memberId , string token)
         {
             // Check if the token belongs to an admin
             var isAdmin = await _userService.ValidateAdminsToken(token);
@@ -275,6 +287,8 @@ namespace LibraryManagementSystem.Services
                 }
             }
 
+            // only active books 
+            // because if the book is false then the book should be already returned so its impossible to be overdued 
             return await _context.BookBorrows
                                  .Where(b => b.MemberId == memberId && b.Active && 
                                  b.ClaimedReturnDate< DateTime.UtcNow &&   // if the claimed date has passed 
@@ -295,7 +309,7 @@ namespace LibraryManagementSystem.Services
                                  })
                                  .ToListAsync();
         }
-        public async Task<int> GetOverdueBooksCountByMemberAsync(int memberId , string token)
+        public async Task<int> GetOverdueBooksCount(int memberId , string token)
         {
             // Check if the token belongs to an admin
             var isAdmin = await _userService.ValidateAdminsToken(token);

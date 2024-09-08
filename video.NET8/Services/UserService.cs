@@ -163,7 +163,7 @@ namespace LibraryManagementSystem.Services
             return true;
         }
         // the authorization is done in the controller since its only allowed by admins 
-        public async Task<IEnumerable<GetUserResponse>> GetActiveMembersByAdminOnly()
+        public async Task<IEnumerable<GetUserResponse>> GetActiveMembers()
         {
             return await _context.Users.Where(u => u.Role == UserRole.Member && u.Active== true)
                 .Select(u => new GetUserResponse
@@ -179,7 +179,7 @@ namespace LibraryManagementSystem.Services
         }
 
 
-        public async Task<IEnumerable<GetUserResponse>> GetActiveAndInActiveMembersByAdminOnly()
+        public async Task<IEnumerable<GetUserResponse>> GetAllMembers()
         {
             return await _context.Users.Where(u => u.Role == UserRole.Member)
                 .Select(u => new GetUserResponse

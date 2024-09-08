@@ -6,18 +6,18 @@ namespace LibraryManagmentSystem.Interfaces
 {
     public interface ILibraryBranchService
     {
-        Task<IEnumerable<GetLibraryBranchResponse>> GetActiveAndInActiveBranches();
+        Task<IEnumerable<GetLibraryBranchResponse>> GetAllBranches();
         Task<IEnumerable<GetLibraryBranchResponse>> GetActiveBranches();
         Task<GetLibraryBranchResponse> GetBranchById(int id);
-        Task<AddLibraryBranchResponse> AddBranchByAdmin(AddLibraryBranchRequest branch);
-        Task<UpdateLibraryBranchResponse> UpdateBranchByAdmin(int id, UpdateLibraryBranchRequest branch);
-        Task<bool> DeleteBranchByAdmin(int id);
-        Task SoftDeleteBranchByAdmin(int id);
+        Task<AddLibraryBranchResponse> AddBranch(AddLibraryBranchRequest branch);
+        Task<UpdateLibraryBranchResponse> UpdateBranch(int id, UpdateLibraryBranchRequest branch);
+        Task<bool> DeleteBranch(int id);
+        Task SoftDeleteBranch(int id);
         Task<IEnumerable<GetBooksDetailsResponse>> GetBooksInBranch(int branchId);
 
-        Task AssignBookToBranchByAdmin(int branchId, int bookId);
+        Task AssignBookToBranch(int branchId, int bookId);
 
-        Task<bool> RemoveBookFromBranchByAdmin(int bookId, int branchId);
+        Task<bool> RemoveBookFromBranch(int bookId, int branchId);
 
 
 

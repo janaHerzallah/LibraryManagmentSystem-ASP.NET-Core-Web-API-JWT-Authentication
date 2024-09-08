@@ -29,9 +29,9 @@ namespace LibraryManagementSystem.Controllers
         }
         [Authorize(Roles ="Admin")]
         [HttpGet] // admin and member can access this endpoint
-        public async Task<ActionResult<IEnumerable<GetLibraryBranchResponse>>> GetActiveAndInActiveBranches()
+        public async Task<ActionResult<IEnumerable<GetLibraryBranchResponse>>> GetAllBranches()
         {
-            var branches = await _libraryBranchService.GetActiveAndInActiveBranches();
+            var branches = await _libraryBranchService.GetAllBranches();
             return Ok(branches);
         }
 
@@ -55,11 +55,11 @@ namespace LibraryManagementSystem.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")] // Only admins can add branches
-        public async Task<ActionResult<AddLibraryBranchResponse>> AddBranchByAdmin(AddLibraryBranchRequest branch)
+        public async Task<ActionResult<AddLibraryBranchResponse>> AddBranch(AddLibraryBranchRequest branch)
         {
             try
             {
-                var newBranch = await _libraryBranchService.AddBranchByAdmin(branch);
+                var newBranch = await _libraryBranchService.AddBranch(branch);
                 return Ok(newBranch);
             }
             catch (Exception ex)
@@ -71,11 +71,11 @@ namespace LibraryManagementSystem.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")] // Only admins can update branches
-        public async Task<ActionResult<UpdateLibraryBranchResponse>> UpdateBranchByAdmin(int id, UpdateLibraryBranchRequest branch)
+        public async Task<ActionResult<UpdateLibraryBranchResponse>> UpdateBranch(int id, UpdateLibraryBranchRequest branch)
         {
             try
             {
-                var updatedBranch = await _libraryBranchService.UpdateBranchByAdmin(id, branch);
+                var updatedBranch = await _libraryBranchService.UpdateBranch(id, branch);
                 return Ok(updatedBranch);
             }
             
@@ -91,7 +91,7 @@ namespace LibraryManagementSystem.Controllers
         {
             try
             {
-                var result = await _libraryBranchService.DeleteBranchByAdmin(id);
+                var result = await _libraryBranchService.DeleteBranch(id);
                 return Ok(new { message = "The branch has been successfully  deleted" });
             }
             catch (Exception ex)
@@ -103,11 +103,11 @@ namespace LibraryManagementSystem.Controllers
 
         [HttpPatch("{id}")]
         [Authorize(Roles = "Admin")] // Only admins can soft delete branches
-        public async Task<IActionResult> SoftDeleteBranchByAdmin(int id)
+        public async Task<IActionResult> SoftDeleteBranch(int id)
         {
             try
             {
-                await _libraryBranchService.SoftDeleteBranchByAdmin(id);
+                await _libraryBranchService.SoftDeleteBranch(id);
                 return Ok(new { message = "The branch has been successfully soft-deleted" });
             }
             catch (Exception ex)
@@ -119,11 +119,11 @@ namespace LibraryManagementSystem.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> AssignBookToBranchByAdmin(int branchId, int bookId)
+        public async Task<IActionResult> AssignBookToBranch(int branchId, int bookId)
         {
             try
             {
-                await _libraryBranchService.AssignBookToBranchByAdmin(branchId, bookId);
+                await _libraryBranchService.AssignBookToBranch(branchId, bookId);
                 return Ok(new { message = "Book assigned to branch successfully." });
             }
             catch (KeyNotFoundException ex)
@@ -132,7 +132,7 @@ namespace LibraryManagementSystem.Controllers
             }
         }
 
-        [HttpGet("branches/{branchId}/books")]
+        [HttpGet("{branchId}")]
         [Authorize] // members and admins can access this endpoint
         public async Task<ActionResult<IEnumerable<GetBooksDetailsResponse>>> GetBooksInBranch(int branchId)
         {
@@ -149,12 +149,12 @@ namespace LibraryManagementSystem.Controllers
 
         [HttpDelete]
         [Authorize(Roles = "Admin")] // Ensure only Admin can perform this operation
-        public async Task<IActionResult> RemoveBookFromBranchByAdmin(int bookId, int branchId)
+        public async Task<IActionResult> RemoveBookFromBranch(int bookId, int branchId)
         {
 
             try
             {
-                var result = await _libraryBranchService.RemoveBookFromBranchByAdmin(bookId, branchId);
+                var result = await _libraryBranchService.RemoveBookFromBranch(bookId, branchId);
                 if (result)
                 {
                     return Ok(new { Message = "Book successfully removed from branch." });

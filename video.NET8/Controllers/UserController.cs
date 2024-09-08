@@ -22,9 +22,9 @@ namespace LibraryManagmentSystem.Controllers
             _userService = registerUserService;
         }
 
-        [HttpPost("register")]
+        [HttpPost]
         [AllowAnonymous] // Allow anonymous users to access the register endpoint
-        public async Task<IActionResult> Register([FromBody] RegisterUserRequest request)
+        public async Task<IActionResult> RegisterUser([FromBody] RegisterUserRequest request)
         {
             try
             {
@@ -37,9 +37,9 @@ namespace LibraryManagmentSystem.Controllers
             }
         }
 
-        [HttpPost("login")]
+        [HttpPost]
         [AllowAnonymous] // Allow anonymous users to access the login endpoint
-        public async Task<IActionResult> LogIn([FromBody] LogInUserRequest request)
+        public async Task<IActionResult> LogInUser([FromBody] LogInUserRequest request)
         {
             try
             {
@@ -55,12 +55,12 @@ namespace LibraryManagmentSystem.Controllers
         [HttpGet]
         [Authorize(Roles = "Admin")] // This attribute will require users with the role "Admin" to access the endpoint
 
-        public async Task<IActionResult> GetActiveMembersByAdmin()
+        public async Task<IActionResult> GetActiveMembers()
         {
             try
             {
                 // Retrieve and return the list of members
-                var members = await _userService.GetActiveMembersByAdminOnly();
+                var members = await _userService.GetActiveMembers();
                 return Ok(members);
             }
             catch (Exception ex)
@@ -71,15 +71,15 @@ namespace LibraryManagmentSystem.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin")] // no need to pass the token as a parameter since its only allowed to be accessed by admins
-        public async Task<IActionResult> GetActiveAndInActiveMembersByAdminOnly()
+        public async Task<IActionResult> GetAllMembers()
         {
-            var users = await _userService.GetActiveAndInActiveMembersByAdminOnly();
+            var users = await _userService.GetAllMembers();
             return Ok(users);
         }
 
         [HttpPut]
         [Authorize(Roles = "Admin")] // no need to pass the token as a parameter since its only allowed to be accessed by admins
-        public async Task<IActionResult> DeactivateUserByAdmin(ActivateDeActivateUserRequest request)
+        public async Task<IActionResult> DeactivateUser(ActivateDeActivateUserRequest request)
         {
             try
             {
@@ -94,7 +94,7 @@ namespace LibraryManagmentSystem.Controllers
 
         [HttpPut]
         [Authorize(Roles = "Admin")] // no need to pass the token as a parameter since its only allowed to be accessed by admins
-        public async Task<IActionResult> ReActivateUserByAdmin(ActivateDeActivateUserRequest request)
+        public async Task<IActionResult> ReActivateUser(ActivateDeActivateUserRequest request)
         {
             try
             {

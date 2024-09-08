@@ -19,7 +19,7 @@ namespace LibraryManagementSystem.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<GetAllBooksResponse>> GetAllBooks()
+        public async Task<IEnumerable<GetAllBooksResponse>> GetActiveBooks()
         {
            
            var list =  await _context.Books.Where(b => b.Active == true).ToListAsync();
@@ -41,7 +41,7 @@ namespace LibraryManagementSystem.Services
         {
             var book = await _context.Books
                 .Include(b => b.Author) // Include the Author entity
-                .FirstOrDefaultAsync(b => b.Id == id && b.Active);
+                .FirstOrDefaultAsync(b => b.Id == id);
 
             if (book == null)
             {
@@ -63,7 +63,7 @@ namespace LibraryManagementSystem.Services
             };
         }
 
-        public async Task<AddBookResponse> AddBookByAdmin(AddBookRequest book)
+        public async Task<AddBookResponse> AddBook(AddBookRequest book)
         {
             if (book.TotalCopies < book.AvailableCopies)
             {
@@ -105,7 +105,7 @@ namespace LibraryManagementSystem.Services
             return response;
         }
 
-        public async Task<AddBookResponse> UpdateBookByAdmin(int id, UpdateBookRequest updatedBook)
+        public async Task<AddBookResponse> UpdateBook(int id, UpdateBookRequest updatedBook)
         {
             var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id);
             if (book == null)
@@ -139,7 +139,7 @@ namespace LibraryManagementSystem.Services
             
         }
 
-        public async Task<bool> DeleteBookByAdmin(int id)
+        public async Task<bool> DeleteBook(int id)
         {
             var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id && b.Active);
             if (book == null)
@@ -152,7 +152,7 @@ namespace LibraryManagementSystem.Services
             return true;
         }
 
-        public async Task SoftDeleteBookByAdmin(int id)
+        public async Task SoftDeleteBook(int id)
         {
             var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id && b.Active);
             if (book == null)
@@ -166,7 +166,7 @@ namespace LibraryManagementSystem.Services
         }
 
 
-        public async Task<IEnumerable<GetAllBooksResponse>> GetActiveAndInactive()
+        public async Task<IEnumerable<GetAllBooksResponse>> GetAllBooks()
         {
 
             var list = await _context.Books.ToListAsync();

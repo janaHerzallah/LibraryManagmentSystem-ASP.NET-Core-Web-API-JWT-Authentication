@@ -19,7 +19,7 @@ namespace LibraryManagementSystem.Services
             _context = context;
         }
 
-       public async Task<IEnumerable<GetCategoryResponse>> GetActiveAndInActiveCategoriesAsync()
+       public async Task<IEnumerable<GetCategoryResponse>> GetAllCategories()
        {
             return await _context.Categories
                                  .Select(c => new GetCategoryResponse
@@ -37,7 +37,7 @@ namespace LibraryManagementSystem.Services
                                  })
                                  .ToListAsync();
         }
-        public async Task<IEnumerable<GetCategoryResponse>> GetAllCategoriesAsync()
+        public async Task<IEnumerable<GetCategoryResponse>> GetActiveCategories()
         {
 
             return await _context.Categories
@@ -58,10 +58,10 @@ namespace LibraryManagementSystem.Services
                                  .ToListAsync();
         }
 
-        public async Task<GetCategoryResponse> GetCategoryByIdAsync(int id)
+        public async Task<GetCategoryResponse> GetCategoryById(int id)
         {
             var category = await _context.Categories.Include(c => c.Books)
-                                                    .FirstOrDefaultAsync(c => c.Id == id && c.Active);
+                                                    .FirstOrDefaultAsync(c => c.Id == id );
 
             if (category == null)
             {
@@ -83,7 +83,7 @@ namespace LibraryManagementSystem.Services
             };
         }
 
-        public async Task<AddCategoryResponse> AddCategoryAsync(AddCategoryRequest request)
+        public async Task<AddCategoryResponse> AddCategory(AddCategoryRequest request)
         {
             var category = new Category
             {
@@ -108,7 +108,7 @@ namespace LibraryManagementSystem.Services
             };
         }
 
-        public async Task<UpdateCategoryResponse> UpdateCategoryAsync(int id, UpdateCategoryRequest request)
+        public async Task<UpdateCategoryResponse> UpdateCategory(int id, UpdateCategoryRequest request)
         {
             var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == id); // no need to check if the user is active or not
             if (category == null)
@@ -148,7 +148,7 @@ namespace LibraryManagementSystem.Services
             return true;
         }
 
-        public async Task SoftDeleteCategoryAsync(int id)
+        public async Task SoftDeleteCategory(int id)
         {
             var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == id && c.Active);
             if (category == null)
@@ -163,7 +163,7 @@ namespace LibraryManagementSystem.Services
         }
 
 
-        public async Task AssignBookToCategoryAsync(int categoryId, int bookId)
+        public async Task AssignBookToCategory(int categoryId, int bookId)
         {
             var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == categoryId && c.Active);
             if (category == null)
@@ -183,7 +183,7 @@ namespace LibraryManagementSystem.Services
         }
 
 
-        public async Task<IEnumerable<GetBooksDetailsResponse>> GetBooksInCategoryAsync(int categoryId)
+        public async Task<IEnumerable<GetBooksDetailsResponse>> GetBooksInCategory(int categoryId)
         {
             var category = await _context.Categories.Include(c => c.Books)
                                                     .FirstOrDefaultAsync(c => c.Id == categoryId && c.Active);
@@ -220,7 +220,9 @@ namespace LibraryManagementSystem.Services
         }
 
 
-        public async Task<IEnumerable<GetBooksDetailsResponse>> FilterBooksAsync(int? authorId = null, bool? available = null)
+       // allowing the authorId to be null, meaning there is no author ID specified.If this value remains null, you  choose to ignore it when building a query, 
+
+        public async Task<IEnumerable<GetBooksDetailsResponse>> FilterBooks(int? authorId = null, bool? available = null)
         {
             //is useful when in need to build queries dynamically based on conditions at runtime. 
             var query = _context.Books.AsQueryable(); // allows to add conditions to the query without executing it immediatly
@@ -243,7 +245,7 @@ namespace LibraryManagementSystem.Services
         }
 
 
-        public async Task<IEnumerable<GetBooksDetailsResponse>> SearchBooksAsync(string? title = null, string? authorName = null)
+        public async Task<IEnumerable<GetBooksDetailsResponse>> SearchBooks(string? title = null, string? authorName = null)
         {
             var query = _context.Books.Include(b => b.Author).AsQueryable();
 

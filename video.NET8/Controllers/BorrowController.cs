@@ -21,7 +21,7 @@ namespace LibraryManagementSystem.Controllers
             
         }
 
-        [HttpPost("borrow")]
+        [HttpPost]
         [Authorize] // Requires the user to be authenticated
         public async Task<ActionResult<BorrowBookResponse>> BorrowBook([FromBody] BorrowBookRequest request)
         {
@@ -41,7 +41,7 @@ namespace LibraryManagementSystem.Controllers
             }
         }
 
-        [HttpPost("return")]
+        [HttpPost]
         [Authorize] // Requires the user to be authenticated
         public async Task<ActionResult<ReturnBookResponse>> ReturnBook([FromBody] ReturnBookRequest request)
         {
@@ -62,15 +62,15 @@ namespace LibraryManagementSystem.Controllers
 
         [HttpGet("{memberId}")]
         [Authorize] // Requires the user to be authenticated
-        public async Task<ActionResult<IEnumerable<GetBorrowedBooksForAMemberResponse>>> GetBorrowedBooksByMember(int memberId)
-        {
+        public async Task<ActionResult<IEnumerable<GetBorrowedBooksForAMemberResponse>>> GetMembersBorrowedBooks(int memberId)
+        { 
             try
             {
                 // Extract and validate token
                 var token = Request.Headers["Authorization"].ToString();
                 var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
                 
-                var borrows = await _borrowService.GetBorrowedBooksByMember(memberId, tokenValue);
+                var borrows = await _borrowService.GetMembersBorrowedBooks(memberId, tokenValue);
                 return Ok(borrows);
             }
             catch (Exception ex)
