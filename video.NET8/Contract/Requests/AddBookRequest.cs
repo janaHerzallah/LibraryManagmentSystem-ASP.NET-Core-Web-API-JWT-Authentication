@@ -4,7 +4,7 @@ namespace LibraryManagementSystem.Contract.Requests
 {
     public class AddBookRequest
     {
-        [Required]
+        [Required(ErrorMessage = "Title is required.")]
         public string Title { get; set; }
 
         public int? AvailableCopies { get; set; }

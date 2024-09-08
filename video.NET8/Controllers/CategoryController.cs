@@ -16,46 +16,52 @@ namespace LibraryManagementSystem.Controllers
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
-        private readonly IUserService _userService;
+        //private readonly IUserService _userService;
 
-        public CategoryController(ICategoryService categoryService, IUserService userService)
+        public CategoryController(ICategoryService categoryService)
         {
             _categoryService = categoryService;
-            _userService = userService;
+            
         }
 
         [Authorize] // members and admins can access this endpoint
         [HttpGet]
+        public async Task<ActionResult<IEnumerable<GetCategoryResponse>>> GetActiveCategories()
+        {
+         
+            try
+            {
+                var categories = await _categoryService.GetActiveCategories();
+                return Ok(categories);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+           
+        }
+        [Authorize] // members and admins can access this endpoint
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<GetCategoryResponse>>> GetAllCategories()
         {
-            var token = Request.Headers["Authorization"].ToString();
-            var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
-
-            if (!await _userService.ValidateAdminsToken(tokenValue))
+            try
             {
-                return Unauthorized(new { message = "Invalid token or unauthorized user" });
+                var categories = await _categoryService.GetAllCategories();
+                return Ok(categories);
             }
-
-            var categories = await _categoryService.GetAllCategoriesAsync();
-            return Ok(categories);
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+            
         }
-
         [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<GetCategoryResponse>> GetCategoryById(int id)
         {
-
-            var token = Request.Headers["Authorization"].ToString();
-            var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
-
-            if (!await _userService.ValidateAdminsToken(tokenValue))
-            {
-                return Unauthorized(new { message = "Invalid token or unauthorized user" });
-            }
-
             try
             {
-                var category = await _categoryService.GetCategoryByIdAsync(id);
+                var category = await _categoryService.GetCategoryById(id);
                 return Ok(category);
             }
             catch (KeyNotFoundException ex)
@@ -66,7 +72,7 @@ namespace LibraryManagementSystem.Controllers
 
         [Authorize(Roles ="Admin")]
         [HttpPost]
-        public async Task<ActionResult<AddCategoryResponse>> AddCategoryByAdmin(AddCategoryRequest request)
+        public async Task<ActionResult<AddCategoryResponse>> AddCategory(AddCategoryRequest request)
         {
 
             //var token = Request.Headers["Authorization"].ToString();
@@ -77,13 +83,13 @@ namespace LibraryManagementSystem.Controllers
             //    return Unauthorized(new { message = "Invalid token or unauthorized user" });
             //}
 
-            var category = await _categoryService.AddCategoryAsync(request);
-            return CreatedAtAction(nameof(GetCategoryById), new { id = category.Id }, category);
+            var category = await _categoryService.AddCategory(request);
+            return Ok(category);
         }
 
         [Authorize(Roles = "Admin")] //it actually works without the logic of auhtentication down below
         [HttpPut("{id}")]
-        public async Task<ActionResult<UpdateCategoryResponse>> UpdateCategoryByAdmin(int id, UpdateCategoryRequest request)
+        public async Task<ActionResult<UpdateCategoryResponse>> UpdateCategory(int id, UpdateCategoryRequest request)
         {
             //var token = Request.Headers["Authorization"].ToString();
             //var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
@@ -95,7 +101,7 @@ namespace LibraryManagementSystem.Controllers
 
             try
             {
-                var category = await _categoryService.UpdateCategoryAsync(id, request);
+                var category = await _categoryService.UpdateCategory(id, request);
                 return Ok(category);
             }
             catch (KeyNotFoundException ex)
@@ -106,32 +112,24 @@ namespace LibraryManagementSystem.Controllers
 
         [Authorize]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCategoryByAdmin(int id)
+        public async Task<IActionResult> DeleteCategory(int id)
         {
-            var token = Request.Headers["Authorization"].ToString();
-            var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
-
-            if (!await _userService.ValidateAdminsToken(tokenValue))
-            {
-                return Unauthorized(new { message = "Invalid token or unauthorized user" });
-            }
-
             var success = await _categoryService.DeleteCategoryAsync(id);
             if (!success)
             {
                 return NotFound("Category not found.");
             }
-            return NoContent();
+            return Ok(new { message = "Category has been deleted successfully" });
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpPut("soft-delete/{id}")]
-        public async Task<IActionResult> SoftDeleteCategoryByAdmin(int id)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> SoftDeleteCategory(int id)
         {
             try
             {
-                await _categoryService.SoftDeleteCategoryAsync(id);
-                return NoContent();
+                await _categoryService.SoftDeleteCategory(id);
+                return Ok(new { message = "Category has been soft-deleted successfully" });
             }
             catch (KeyNotFoundException ex)
             {
@@ -140,12 +138,12 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpPost("api/categories/{id}/books/{bookId}")]
-        public async Task<IActionResult> AssignBookToCategoryByAdmin(int id, int bookId)
+        [HttpPost("{id}/{bookId}")]
+        public async Task<IActionResult> AssignBookToCategory(int id, int bookId)
         {
             try
             {
-                await _categoryService.AssignBookToCategoryAsync(id, bookId);
+                await _categoryService.AssignBookToCategory(id, bookId);
                 return Ok("Book assigned to category successfully.");
             }
             catch (KeyNotFoundException ex)
@@ -154,13 +152,13 @@ namespace LibraryManagementSystem.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
-        [HttpGet("api/categories/{id}/books")]
+        [Authorize] //admin and members can access this endpoint
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetBooksInCategory(int id)
         {
             try
             {
-                var books = await _categoryService.GetBooksInCategoryAsync(id);
+                var books = await _categoryService.GetBooksInCategory(id);
                 return Ok(books);
             }
             catch (KeyNotFoundException ex)
@@ -170,7 +168,7 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpDelete("api/categories/{id}/books/{bookId}")]
+        [HttpDelete("{id}/{bookId}")]
         public async Task<IActionResult> RemoveBookFromCategoryByAdmin(int id, int bookId)
         {
             try
@@ -185,18 +183,18 @@ namespace LibraryManagementSystem.Controllers
         }
 
         [Authorize] 
-        [HttpGet("api/books/filter")]
+        [HttpGet]
         public async Task<IActionResult> FilterBooks([FromQuery] int? authorId, [FromQuery] bool? available)
         {
-            var books = await _categoryService.FilterBooksAsync(authorId, available);
+            var books = await _categoryService.FilterBooks(authorId, available);
             return Ok(books);
         }
 
-        [Authorize]
-        [HttpGet("api/books/search")]
+        [AllowAnonymous] //let anyone search through our books
+        [HttpGet]
         public async Task<IActionResult> SearchBooks([FromQuery] string? title, [FromQuery] string? authorName)
         {
-            var books = await _categoryService.SearchBooksAsync(title, authorName);
+            var books = await _categoryService.SearchBooks(title, authorName);
             return Ok(books);
         }
 

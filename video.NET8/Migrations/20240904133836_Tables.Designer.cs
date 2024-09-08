@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LibraryManagmentSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240901074543_activeforalltablesandNavigationPropertiesandBorrowsRelationship")]
-    partial class activeforalltablesandNavigationPropertiesandBorrowsRelationship
+    [Migration("20240904133836_Tables")]
+    partial class Tables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -109,8 +109,23 @@ namespace LibraryManagmentSystem.Migrations
                     b.Property<bool>("Active")
                         .HasColumnType("boolean");
 
+                    b.Property<DateTime>("ActualReturnDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int?>("BookId")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime>("BorrowDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ClaimedReturnDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("MemberId")
                         .HasColumnType("integer");
@@ -134,6 +149,12 @@ namespace LibraryManagmentSystem.Migrations
 
                     b.Property<bool>("Active")
                         .HasColumnType("boolean");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -197,6 +218,12 @@ namespace LibraryManagmentSystem.Migrations
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
+
+                    b.Property<int>("OverDueCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

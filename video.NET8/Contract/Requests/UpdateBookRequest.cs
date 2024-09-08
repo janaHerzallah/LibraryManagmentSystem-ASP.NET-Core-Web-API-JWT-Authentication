@@ -1,13 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace LibraryManagmentSystem.Contract.Responses
+namespace LibraryManagmentSystem.Contract.Requests
 {
-    public class AddBookResponse
+    public class UpdateBookRequest
     {
-        
-        public int Id { get; set; }
+        [Required(ErrorMessage = "Title is required.")]
         public string Title { get; set; }
-            
+
         public int? AvailableCopies { get; set; }
 
         public int? TotalCopies { get; set; }
@@ -18,10 +17,7 @@ namespace LibraryManagmentSystem.Contract.Responses
 
         public int? LibraryBranchId { get; set; }
 
-        public DateTime CreatedAt { get; set; }
-
-        public DateTime ModifiedAt { get; set; }
-
-        // Active is not included here since it will be set to true by default in the Book class.
+        [Required(ErrorMessage = "Only true or false values are allowed.")]
+        public bool active { get; set; }
     }
 }

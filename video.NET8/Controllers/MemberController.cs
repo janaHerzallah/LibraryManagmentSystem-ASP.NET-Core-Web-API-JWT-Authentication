@@ -6,9 +6,7 @@ using LibraryManagmentSystem.Contract.Responses;
 using LibraryManagmentSystem.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+
 
 namespace LibraryManagementSystem.Controllers
 {
@@ -24,173 +22,201 @@ namespace LibraryManagementSystem.Controllers
             _memberService = memberService;
             _userService = userService;
         }
+        // authorize ? will it allow members even though i have a check for admin in the method ?
+        // since there is an admin validation in the method it will outweight the authorize attribute 
+        // and only allow admins to access the method
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<IEnumerable<Member>>> GetAllMembers()
+        {
+            try
+            {
+
+                var members = await _memberService.GetAllMembers();
+                return Ok(members);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
+
 
         [HttpGet]
-        [Authorize]
-        public async Task<ActionResult<IEnumerable<Member>>> GetAllMembersByAdmin()
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<IEnumerable<Member>>> GetActiveMembers()
         {
-            var token = Request.Headers["Authorization"].ToString();
-            var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
-
-            if (!await _userService.ValidateAdminsToken(tokenValue))
+            try
             {
-                return Unauthorized(new { message = "Invalid token or unauthorized user" });
+                var members = await _memberService.GetActiveMembers();
+                return Ok(members);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
             }
 
-            var members = await _memberService.GetAllMembersAsync();
-            return Ok(members);
         }
 
         [HttpGet("{id}")]
-        [Authorize]
-        public async Task<ActionResult<Member>> GetMemberByIdByAdmin(int id)
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<Member>> GetMemberById(int id)
         {
-            var token = Request.Headers["Authorization"].ToString();
-            var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
-
-            if (!await _userService.ValidateAdminsToken(tokenValue))
+            try
             {
-                return Unauthorized(new { message = "Invalid token or unauthorized user" });
-            }
 
-            var member = await _memberService.GetMemberByIdAsync(id);
-            return Ok(member);
+                var member = await _memberService.GetMemberById(id);
+                return Ok(member);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<GetMemberResponse>> AddMemberByAdmin([FromBody] AddMemberRequest member)
+        public async Task<ActionResult<GetMemberResponse>> AddMember([FromBody] AddMemberRequest member)
         {
-            var token = Request.Headers["Authorization"].ToString();
-            var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
 
-            if (!await _userService.ValidateAdminsToken(tokenValue))
-            {
-                return Unauthorized(new { message = "Invalid token or unauthorized user" });
-            }
-
-            var addedMember = await _memberService.AddMemberAsync(member);
-            return CreatedAtAction(nameof(GetMemberByIdByAdmin), new { id = addedMember.Id }, addedMember);
+            var addedMember = await _memberService.AddMember(member);
+            return Ok(addedMember);
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<GetMemberResponse>> UpdateMemberByAdmin(int id, [FromBody] UpdateMemeberRequest updatedMember)
+        public async Task<ActionResult<GetMemberResponse>> UpdateMember(int id, [FromBody] UpdateMemeberRequest updatedMember)
         {
-            var token = Request.Headers["Authorization"].ToString();
-            var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
-
-            if (!await _userService.ValidateAdminsToken(tokenValue))
+            try
             {
-                return Unauthorized(new { message = "Invalid token or unauthorized user" });
+                var member = await _memberService.UpdateMember(id, updatedMember);
+                return Ok(member);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
             }
 
-            var member = await _memberService.UpdateMemberAsync(id, updatedMember);
-            return Ok(member);
         }
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> DeleteMemberByAdmin(int id)
+        public async Task<ActionResult> DeleteMember(int id)
         {
-            var token = Request.Headers["Authorization"].ToString();
-            var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
-
-            if (!await _userService.ValidateAdminsToken(tokenValue))
+            try
             {
-                return Unauthorized(new { message = "Invalid token or unauthorized user" });
-            }
+                var result = await _memberService.DeleteMember(id);
+                if (!result)
+                {
+                    return NotFound(new { message = "Member not found." });
+                }
 
-            var result = await _memberService.DeleteMemberAsync(id);
-            if (!result)
+                return Ok(new { message = "The member was successfully deleted." });
+            }
+            catch (Exception ex)
             {
-                return NotFound();
+                // Log the exception (you can use a logging framework like Serilog, NLog, etc.)
+                // Return a generic error message to avoid exposing details of the exception
+                return StatusCode(500, new { message = "An error occurred while processing your request.", details = ex.Message });
             }
-
-            return NoContent();
         }
+
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult> SoftDeleteMemberByAdmin(int id)
+        public async Task<ActionResult> SoftDeleteMember(int id)
         {
-            var token = Request.Headers["Authorization"].ToString();
-            var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
-
-            if (!await _userService.ValidateAdminsToken(tokenValue))
+            try
             {
-                return Unauthorized(new { message = "Invalid token or unauthorized user" });
+                await _memberService.SoftDeleteMember(id);
+                return Ok(new { message = "The member got successfully soft-deleted , you can update its status from the update method" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
             }
 
-            await _memberService.SoftDeleteMemberAsync(id);
-            return NoContent();
         }
 
-        [HttpGet("borrowed-books")]
-        public async Task<IActionResult> GetBorrowedBooksByMember(int id)
+        [HttpGet("{id}")]
+        [Authorize]
+        public async Task<IActionResult> GetMembersAllBorrowedBooks(int id)
         {
             try
             {
                 // Extract and validate token
                 var token = Request.Headers["Authorization"].ToString();
                 var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
-                if (!await _userService.ValidateUsersToken(tokenValue))
-                {
-                    return Unauthorized(new { message = "Invalid token or unauthorized user" });
-                }
+               
 
-                var books = await _memberService.GetBorrowedBooksByMemberAsync(id);
+                var books = await _memberService.GetMembersAllBorrowedBooks(id, tokenValue);
                 return Ok(books);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = ex.Message });
+                return NotFound(new { message = ex.Message });
             }
             
         }
 
-        [HttpGet("borrowed-books/overdue")]
-        public async Task<IActionResult> GetBorrowedBooksNotReturnedByMember(int id)
+        [HttpGet("{id}")]
+        [Authorize]
+        public async Task<IActionResult> GetNotReturnedBooks(int id)
         {
             try
             {
                 // Extract and validate token
                 var token = Request.Headers["Authorization"].ToString();
                 var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
-                if (!await _userService.ValidateUsersToken(tokenValue))
-                {
-                    return Unauthorized(new { message = "Invalid token or unauthorized user" });
-                }
+                
 
-                var books = await _memberService.GetBorrowedBooksNotReturnedByMemberAsync(id);
+                var books = await _memberService.GetNotReturnedBooks(id, tokenValue);
                 return Ok(books);
             }
-            catch (Exception ex)
+            catch (KeyNotFoundException ex)
             {
-                return StatusCode(500, new { message = ex.Message });
+                return NotFound(new { message = ex.Message });
             }
             
         }
-
-        [HttpGet("borrowed-books/overdue-count")]
-        public async Task<IActionResult> GetOverdueBooksCountByMember(int id)
+        [HttpGet("{id}")]
+        [Authorize]
+        public async Task<IActionResult> GetOverDueBorrowedBooks(int id)
         {
             try
             {
                 // Extract and validate token
                 var token = Request.Headers["Authorization"].ToString();
                 var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
-                if (!await _userService.ValidateUsersToken(tokenValue))
-                {
-                    return Unauthorized(new { message = "Invalid token or unauthorized user" });
-                }
+             
 
-                var count = await _memberService.GetOverdueBooksCountByMemberAsync(id);
+                var books = await _memberService.GetOverDueBorrowedBooks(id, tokenValue);
+                return Ok(books);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+
+        }
+
+        [HttpGet("{id}")]
+        [Authorize]
+        public async Task<IActionResult> GetOverdueBooksCount(int id)
+        {
+            try
+            {
+                // Extract and validate token
+                var token = Request.Headers["Authorization"].ToString();
+                var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
+               
+
+                var count = await _memberService.GetOverdueBooksCount(id, tokenValue);
                 return Ok(count);
             }
-            catch (Exception ex)
+            catch (KeyNotFoundException ex)
             {
-                return StatusCode(500, new { message = ex.Message });
+                return NotFound(new { message = ex.Message });
             }
             
         }

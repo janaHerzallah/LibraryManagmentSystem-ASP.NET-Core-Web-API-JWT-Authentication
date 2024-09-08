@@ -9,11 +9,12 @@ namespace LibraryManagmentSystem.Interfaces
 {
     public interface IAuthorService
     {
-        Task<IEnumerable<GetAllAuthorsResponse>> GetAllAuthors();
+        Task<IEnumerable<GetAllAuthorsResponse>> GetAllAuthors(); //admin only
+        Task<IEnumerable<GetAllAuthorsResponse>> GetActiveAuthors();
         Task<GetAuthorByIdResponse> GetAuthorById(int id);
-        Task<AddAuthorResponse> AddAuthorByAdmin(AddAuthorRequest author); // admin only
-        Task<UpdateAuthorResponse> UpdateAuthorByAdmin(int id, UpdateAuthorRequest updatedAuthor); // admin only
-        Task<bool> DeleteAuthorByAdmin(int id); // admin only
-        Task SoftDeleteAuthorByAdmin(int id); // admin only
+        Task<AddAuthorResponse> AddAuthor(AddAuthorRequest author); // admin only
+        Task<UpdateAuthorResponse> UpdateAuthor(int id, UpdateAuthorRequest updatedAuthor); // admin only
+        Task<bool> DeleteAuthor(int id); // admin only
+        Task SoftDeleteAuthor(int id); // admin only
     }
 }

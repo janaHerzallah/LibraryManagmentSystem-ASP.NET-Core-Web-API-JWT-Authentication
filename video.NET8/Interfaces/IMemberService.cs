@@ -7,20 +7,21 @@ namespace LibraryManagementSystem.Interfaces
     {
         public interface IMemberService
         {
-            Task<IEnumerable<GetMemberResponse>> GetAllMembersAsync();
-            Task<GetMemberResponse> GetMemberByIdAsync(int id);
-            Task<GetMemberResponse> AddMemberAsync(AddMemberRequest member);
-            Task<GetMemberResponse> UpdateMemberAsync(int id, UpdateMemeberRequest updatedMember);
-            Task<bool> DeleteMemberAsync(int id);
-            Task SoftDeleteMemberAsync(int id);
 
-            // three get APIS related to the borrow table still needs to be figured out
+        Task<IEnumerable<GetMemberResponse>> GetAllMembers();
+            Task<IEnumerable<GetMemberResponse>> GetActiveMembers();
+            Task<GetMemberResponse> GetMemberById(int id);
+            Task<GetMemberResponse> AddMember(AddMemberRequest member);
+            Task<GetMemberResponse> UpdateMember(int id, UpdateMemeberRequest updatedMember);
+            Task<bool> DeleteMember(int id);
+            Task SoftDeleteMember(int id);
 
-            Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksByMemberAsync(int memberId);
+            Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetMembersAllBorrowedBooks(int memberId,string token);
 
-            Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksNotReturnedByMemberAsync(int memberId);
+            Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetNotReturnedBooks(int memberId, string token);
+            Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetOverDueBorrowedBooks(int memberId, string token);
 
-            Task<int> GetOverdueBooksCountByMemberAsync(int memberId);
+            Task<int> GetOverdueBooksCount(int memberId, string token);
         }
     }
 

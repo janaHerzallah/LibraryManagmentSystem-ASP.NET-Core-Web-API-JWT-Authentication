@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagmentSystem.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     [Authorize] // This attribute will require authentication to access the controller
     public class UserController : ControllerBase
@@ -22,9 +22,9 @@ namespace LibraryManagmentSystem.Controllers
             _userService = registerUserService;
         }
 
-        [HttpPost("register")]
+        [HttpPost]
         [AllowAnonymous] // Allow anonymous users to access the register endpoint
-        public async Task<IActionResult> Register([FromBody] RegisterUserRequest request)
+        public async Task<IActionResult> RegisterUser([FromBody] RegisterUserRequest request)
         {
             try
             {
@@ -37,9 +37,9 @@ namespace LibraryManagmentSystem.Controllers
             }
         }
 
-        [HttpPost("login")]
+        [HttpPost]
         [AllowAnonymous] // Allow anonymous users to access the login endpoint
-        public async Task<IActionResult> LogIn([FromBody] LogInUserRequest request)
+        public async Task<IActionResult> LogInUser([FromBody] LogInUserRequest request)
         {
             try
             {
@@ -52,28 +52,15 @@ namespace LibraryManagmentSystem.Controllers
             }
         }
 
-        [HttpGet("GetMembersByAdmin")]
+        [HttpGet]
         [Authorize(Roles = "Admin")] // This attribute will require users with the role "Admin" to access the endpoint
 
-        public async Task<IActionResult> GetMembers()
+        public async Task<IActionResult> GetActiveMembers()
         {
             try
             {
-
-                // get the token fro the authorization header
-
-                var token = Request.Headers["Authorization"].ToString();
-                // Extract the token value from the "Bearer " prefix
-                var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
-
-                // Validate the token using the service method
-                if (!await _userService.ValidateAdminsToken(tokenValue))
-                {
-                    return Unauthorized(new { message = "Invalid token or unauthorized user" });
-                }
-
                 // Retrieve and return the list of members
-                var members = await _userService.GetMembersByAdminOnly();
+                var members = await _userService.GetActiveMembers();
                 return Ok(members);
             }
             catch (Exception ex)
@@ -82,11 +69,43 @@ namespace LibraryManagmentSystem.Controllers
             }
         }
 
+        [HttpGet]
+        [Authorize(Roles = "Admin")] // no need to pass the token as a parameter since its only allowed to be accessed by admins
+        public async Task<IActionResult> GetAllMembers()
+        {
+            var users = await _userService.GetAllMembers();
+            return Ok(users);
+        }
 
+        [HttpPut]
+        [Authorize(Roles = "Admin")] // no need to pass the token as a parameter since its only allowed to be accessed by admins
+        public async Task<IActionResult> DeactivateUser(ActivateDeActivateUserRequest request)
+        {
+            try
+            {
+                var response = await _userService.DeactivateUser(request);
+                return Ok(response);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
 
-
-
-
+        [HttpPut]
+        [Authorize(Roles = "Admin")] // no need to pass the token as a parameter since its only allowed to be accessed by admins
+        public async Task<IActionResult> ReActivateUser(ActivateDeActivateUserRequest request)
+        {
+            try
+            {
+                var response = await _userService.ReActivateUser(request);
+                return Ok(response);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
 
     }
 }

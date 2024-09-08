@@ -13,15 +13,15 @@ namespace LibraryManagementSystem.Controllers
     public class BorrowsController : ControllerBase
     {
         private readonly IBorrowService _borrowService;
-        private readonly IUserService _userService;
+        
 
-        public BorrowsController(IBorrowService borrowService, IUserService userService)
+        public BorrowsController(IBorrowService borrowService)
         {
             _borrowService = borrowService;
-            _userService = userService;
+            
         }
 
-        [HttpPost("borrow")]
+        [HttpPost]
         [Authorize] // Requires the user to be authenticated
         public async Task<ActionResult<BorrowBookResponse>> BorrowBook([FromBody] BorrowBookRequest request)
         {
@@ -30,12 +30,9 @@ namespace LibraryManagementSystem.Controllers
                 // Extract and validate token
                 var token = Request.Headers["Authorization"].ToString();
                 var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
-                if (!await _userService.ValidateUsersToken(tokenValue))
-                {
-                    return Unauthorized(new { message = "Invalid token or unauthorized user" });
-                }
+                
 
-                var borrow = await _borrowService.BorrowBook(request.MemberId, request.BookId);
+                var borrow = await _borrowService.BorrowBook(request, tokenValue);
                 return Ok(borrow);
             }
             catch (Exception ex)
@@ -44,7 +41,7 @@ namespace LibraryManagementSystem.Controllers
             }
         }
 
-        [HttpPost("return")]
+        [HttpPost]
         [Authorize] // Requires the user to be authenticated
         public async Task<ActionResult<ReturnBookResponse>> ReturnBook([FromBody] ReturnBookRequest request)
         {
@@ -53,12 +50,8 @@ namespace LibraryManagementSystem.Controllers
                 // Extract and validate token
                 var token = Request.Headers["Authorization"].ToString();
                 var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
-                if (!await _userService.ValidateUsersToken(tokenValue))
-                {
-                    return Unauthorized(new { message = "Invalid token or unauthorized user" });
-                }
-
-                var borrow = await _borrowService.ReturnBook(request.MemberId, request.BookId);
+                
+                var borrow = await _borrowService.ReturnBook(request.MemberId, request.BookId, tokenValue);
                 return Ok(borrow);
             }
             catch (Exception ex)
@@ -69,19 +62,15 @@ namespace LibraryManagementSystem.Controllers
 
         [HttpGet("{memberId}")]
         [Authorize] // Requires the user to be authenticated
-        public async Task<ActionResult<IEnumerable<GetBorrowedBooksForAMemberResponse>>> GetBorrowedBooksByMember(int memberId)
-        {
+        public async Task<ActionResult<IEnumerable<GetBorrowedBooksForAMemberResponse>>> GetMembersBorrowedBooks(int memberId)
+        { 
             try
             {
                 // Extract and validate token
                 var token = Request.Headers["Authorization"].ToString();
                 var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
-                if (!await _userService.ValidateUsersToken(tokenValue))
-                {
-                    return Unauthorized(new { message = "Invalid token or unauthorized user" });
-                }
-
-                var borrows = await _borrowService.GetBorrowedBooksByMember(memberId);
+                
+                var borrows = await _borrowService.GetMembersBorrowedBooks(memberId, tokenValue);
                 return Ok(borrows);
             }
             catch (Exception ex)

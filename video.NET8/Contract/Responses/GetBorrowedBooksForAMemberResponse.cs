@@ -8,7 +8,7 @@
 
         public DateTime BorrowDate { get; set; }
 
-        public DateTime ReturnDate { get; set; }
+        public string ReturnDate { get; set; }
 
         public DateTime DateCreated { get; set; }
 
@@ -17,6 +17,9 @@
         public int? availableCopies { get; set; }
 
         public string? Title { get; set; }
+
+        public DateTime ClaimedReturnDate { get; set; }
+       
 
     }
 }

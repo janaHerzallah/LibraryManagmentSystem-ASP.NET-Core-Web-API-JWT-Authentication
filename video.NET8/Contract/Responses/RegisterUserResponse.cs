@@ -17,6 +17,8 @@
   
         public DateTime DateCreated { get; set; }
       
+        public string? MemberName { get; set; }
+        public string? MemberEmail { get; set; }
 
 
     }

@@ -6,17 +6,18 @@ namespace LibraryManagmentSystem.Interfaces
 {
     public interface ILibraryBranchService
     {
-        Task<IEnumerable<GetLibraryBranchResponse>> GetAllBranchesAsync();
-        Task<GetLibraryBranchResponse> GetBranchByIdAsync(int id);
-        Task<AddLibraryBranchResponse> AddBranchAsync(AddLibraryBranchRequest branch);
-        Task<UpdateLibraryBranchResponse> UpdateBranchAsync(int id, UpdateLibraryBranchRequest branch);
-        Task<bool> DeleteBranchAsync(int id);
-        Task SoftDeleteBranchAsync(int id);
-        Task<IEnumerable<GetBooksDetailsResponse>> GetBooksInBranchAsync(int branchId);
+        Task<IEnumerable<GetLibraryBranchResponse>> GetAllBranches();
+        Task<IEnumerable<GetLibraryBranchResponse>> GetActiveBranches();
+        Task<GetLibraryBranchResponse> GetBranchById(int id);
+        Task<AddLibraryBranchResponse> AddBranch(AddLibraryBranchRequest branch);
+        Task<UpdateLibraryBranchResponse> UpdateBranch(int id, UpdateLibraryBranchRequest branch);
+        Task<bool> DeleteBranch(int id);
+        Task SoftDeleteBranch(int id);
+        Task<IEnumerable<GetBooksDetailsResponse>> GetBooksInBranch(int branchId);
 
-        Task AssignBookToBranchAsync(int branchId, int bookId);
+        Task AssignBookToBranch(int branchId, int bookId);
 
-        Task<bool> RemoveBookFromBranchAsync(int bookId, int branchId);
+        Task<bool> RemoveBookFromBranch(int bookId, int branchId);
 
 
 

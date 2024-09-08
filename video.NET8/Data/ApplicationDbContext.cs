@@ -18,6 +18,7 @@ namespace LibraryManagementSystem.Data
         public DbSet<LibraryBranch> Branches { get; set; }
         public DbSet<Borrow> BookBorrows { get; set; }
         public DbSet<User> Users { get; set; }
+         
 
     }
 }

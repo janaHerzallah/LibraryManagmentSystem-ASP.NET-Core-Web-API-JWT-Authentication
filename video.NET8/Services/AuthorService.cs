@@ -4,10 +4,8 @@ using LibraryManagementSystem.Domain;
 using LibraryManagmentSystem.Contract.Requests;
 using LibraryManagmentSystem.Contract.Responses;
 using LibraryManagmentSystem.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace LibraryManagementSystem.Services
 {
@@ -20,8 +18,9 @@ namespace LibraryManagementSystem.Services
         {
             _context = context;
         }
+        
 
-        public async Task<IEnumerable<GetAllAuthorsResponse>> GetAllAuthors()
+        public async Task<IEnumerable<GetAllAuthorsResponse>> GetActiveAuthors()
         {
             var list = await _context.Authors
                                      .Where(a => a.Active == true)
@@ -41,12 +40,30 @@ namespace LibraryManagementSystem.Services
 
         }
 
+        public async Task<IEnumerable<GetAllAuthorsResponse>> GetAllAuthors()
+        {
+            var list = await _context.Authors
+                                     .Include(a => a.Books) // Include the Books property
+                                     .Select(a => new GetAllAuthorsResponse
+                                     {
+                                         Id = a.Id,
+                                         Name = a.Name,
+                                         Books = a.Books.Select(b => new GetBooksDetailsResponse
+                                         {
+                                             Id = b.Id,
+                                             Title = b.Title
+                                         }).ToList()
+                                     }).ToListAsync();
+            return list;
+
+
+        }
 
         public async Task<GetAuthorByIdResponse> GetAuthorById(int id)
         {
             var author = await _context.Authors
                 .Include(a => a.Books) // Include related Books
-                .FirstOrDefaultAsync(a => a.Id == id && a.Active);
+                .FirstOrDefaultAsync(a => a.Id == id);
 
             if (author == null)
             {
@@ -67,7 +84,7 @@ namespace LibraryManagementSystem.Services
             };
         }
 
-        public async Task<AddAuthorResponse> AddAuthorByAdmin(AddAuthorRequest author)
+        public async Task<AddAuthorResponse> AddAuthor(AddAuthorRequest author)
         {
 
 
@@ -75,7 +92,9 @@ namespace LibraryManagementSystem.Services
             {
                 Name = author.Name,
                 DateCreated = DateTime.UtcNow,
-                DateModified = DateTime.UtcNow
+                DateModified = DateTime.UtcNow,
+                Active = true
+
             };
 
             _context.Authors.Add(authorDataBase);
@@ -106,7 +125,7 @@ namespace LibraryManagementSystem.Services
                     AuthorId = authorDataBase.Id,
                     DateCreated = DateTime.UtcNow,
                     DateModified = DateTime.UtcNow,
-
+                    Active = true,
 
                     TotalCopies = book.TotalCopies ?? 0,
                     AvailableCopies = book.AvailableCopies ?? 0
@@ -129,7 +148,7 @@ namespace LibraryManagementSystem.Services
             };
         }
 
-        public async Task<UpdateAuthorResponse> UpdateAuthorByAdmin(int id, UpdateAuthorRequest updatedAuthor)
+        public async Task<UpdateAuthorResponse> UpdateAuthor(int id, UpdateAuthorRequest updatedAuthor)
         {
             var author = await _context.Authors.FirstOrDefaultAsync(a => a.Id == id );
 
@@ -157,7 +176,7 @@ namespace LibraryManagementSystem.Services
             }; 
     }
 
-    public async Task<bool> DeleteAuthorByAdmin(int id)
+    public async Task<bool> DeleteAuthor(int id)
     {
         var author = await _context.Authors.FirstOrDefaultAsync(a => a.Id == id && a.Active);
         if (author == null)
@@ -170,7 +189,7 @@ namespace LibraryManagementSystem.Services
         return true;
     }
 
-    public async Task SoftDeleteAuthorByAdmin(int id)
+    public async Task SoftDeleteAuthor(int id)
     {
         var author = await _context.Authors.FirstOrDefaultAsync(a => a.Id == id && a.Active);
         if (author == null)

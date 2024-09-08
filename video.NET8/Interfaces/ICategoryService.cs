@@ -7,21 +7,22 @@ namespace LibraryManagementSystem.Interfaces
 {
     public interface ICategoryService
     {
-        Task<IEnumerable<GetCategoryResponse>> GetAllCategoriesAsync();
-        Task<GetCategoryResponse> GetCategoryByIdAsync(int id);
-        Task<AddCategoryResponse> AddCategoryAsync(AddCategoryRequest category);
-        Task<UpdateCategoryResponse> UpdateCategoryAsync(int id, UpdateCategoryRequest category);
+        Task<IEnumerable<GetCategoryResponse>> GetAllCategories();
+        Task<IEnumerable<GetCategoryResponse>> GetActiveCategories();
+        Task<GetCategoryResponse> GetCategoryById(int id);
+        Task<AddCategoryResponse> AddCategory(AddCategoryRequest category);
+        Task<UpdateCategoryResponse> UpdateCategory(int id, UpdateCategoryRequest category);
         Task<bool> DeleteCategoryAsync(int id);
-        Task SoftDeleteCategoryAsync(int id);
+        Task SoftDeleteCategory(int id);
         Task RemoveBookFromCategoryAsync(int categoryId, int bookId);
 
-        Task<IEnumerable<GetBooksDetailsResponse>> GetBooksInCategoryAsync(int categoryId);
+        Task<IEnumerable<GetBooksDetailsResponse>> GetBooksInCategory(int categoryId);
 
-        Task AssignBookToCategoryAsync(int categoryId, int bookId);
+        Task AssignBookToCategory(int categoryId, int bookId);
 
-        Task<IEnumerable<GetBooksDetailsResponse>> FilterBooksAsync(int? authorId = null, bool? available = null);
+        Task<IEnumerable<GetBooksDetailsResponse>> FilterBooks(int? authorId = null, bool? available = null);
 
 
-        Task<IEnumerable<GetBooksDetailsResponse>> SearchBooksAsync(string? title = null, string? authorName = null);
+        Task<IEnumerable<GetBooksDetailsResponse>> SearchBooks(string? title = null, string? authorName = null);
     }
 }
