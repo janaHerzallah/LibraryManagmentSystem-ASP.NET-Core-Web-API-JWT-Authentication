@@ -3,6 +3,7 @@ using LibraryManagementSystem.Domain;
 using LibraryManagementSystem.Interfaces;
 using LibraryManagmentSystem.Contract.Requests;
 using LibraryManagmentSystem.Contract.Responses;
+using LibraryManagmentSystem.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -11,10 +12,12 @@ namespace LibraryManagementSystem.Services
     public class MemberService : IMemberService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IUserService _userService;
 
-        public MemberService(ApplicationDbContext context)
+        public MemberService(ApplicationDbContext context, IUserService userService )
         {
             _context = context;
+            _userService = userService;
         }
 
         
@@ -81,7 +84,7 @@ namespace LibraryManagementSystem.Services
                 Name = member.Name,
                 
                 Email = member.Email,
-                Active = true,
+                Active = true, // default value
                 DateCreated = DateTime.UtcNow,
                 DateModified = DateTime.UtcNow,
                 UserId = member.userId
@@ -164,9 +167,30 @@ namespace LibraryManagementSystem.Services
             _context.Members.Update(member);
             await _context.SaveChangesAsync();
         }
-        public async Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksByMemberAsync(int memberId)
+        public async Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksByMemberAsync(int memberId , string token)
         {
-            return await _context.BookBorrows
+            // Check if the token belongs to an admin
+            var isAdmin = await _userService.ValidateAdminsToken(token);
+
+            // If not an admin, check if the token belongs to the member
+            if (!isAdmin)
+            {
+                var member = await _context.Members
+                    .Include(m => m.User)
+                    .FirstOrDefaultAsync(m => m.Id == memberId && m.Active);
+
+                if (member == null)
+                {
+                    throw new Exception("Member not found.");
+                }
+
+                if (!member.User.Token.Equals(token))
+                {
+                    throw new UnauthorizedAccessException("Unauthorized access. You can only return the book for yourself not for anyone else.");
+                }
+            }
+
+                return await _context.BookBorrows
                                  .Where(b => b.MemberId == memberId && b.Active)
                                  .Include(b => b.Book)
                                  .Select(b => new GetBorrowedBooksForAMemberResponse
@@ -186,8 +210,29 @@ namespace LibraryManagementSystem.Services
         }
 
 
-        public async Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksNotReturnedByMemberAsync(int memberId)
+        public async Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksNotReturnedByMemberAsync(int memberId , string token)
         {
+            // Check if the token belongs to an admin
+            var isAdmin = await _userService.ValidateAdminsToken(token);
+
+            // If not an admin, check if the token belongs to the member
+            if (!isAdmin)
+            {
+                var member = await _context.Members
+                    .Include(m => m.User)
+                    .FirstOrDefaultAsync(m => m.Id == memberId && m.Active);
+
+                if (member == null)
+                {
+                    throw new Exception("Member not found.");
+                }
+
+                if (!member.User.Token.Equals(token))
+                {
+                    throw new UnauthorizedAccessException("Unauthorized access. You can only return the book for yourself not for anyone else.");
+                }
+            }
+
             return await _context.BookBorrows
                                  .Where(b => b.MemberId == memberId && b.Active && ( b.ActualReturnDate == DateTime.MinValue))
                                  .Include(b => b.Book)
@@ -207,8 +252,29 @@ namespace LibraryManagementSystem.Services
                                  .ToListAsync();
         }
 
-        public async Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksOverDuedByMember(int memberId)
+        public async Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksOverDuedByMember(int memberId , string token)
         {
+            // Check if the token belongs to an admin
+            var isAdmin = await _userService.ValidateAdminsToken(token);
+
+            // If not an admin, check if the token belongs to the member
+            if (!isAdmin)
+            {
+                var member = await _context.Members
+                    .Include(m => m.User)
+                    .FirstOrDefaultAsync(m => m.Id == memberId && m.Active);
+
+                if (member == null)
+                {
+                    throw new Exception("Member not found.");
+                }
+
+                if (!member.User.Token.Equals(token))
+                {
+                    throw new UnauthorizedAccessException("Unauthorized access. You can only return the book for yourself not for anyone else.");
+                }
+            }
+
             return await _context.BookBorrows
                                  .Where(b => b.MemberId == memberId && b.Active && 
                                  b.ClaimedReturnDate< DateTime.UtcNow &&   // if the claimed date has passed 
@@ -229,8 +295,29 @@ namespace LibraryManagementSystem.Services
                                  })
                                  .ToListAsync();
         }
-        public async Task<int> GetOverdueBooksCountByMemberAsync(int memberId)
+        public async Task<int> GetOverdueBooksCountByMemberAsync(int memberId , string token)
         {
+            // Check if the token belongs to an admin
+            var isAdmin = await _userService.ValidateAdminsToken(token);
+
+            // If not an admin, check if the token belongs to the member
+            if (!isAdmin)
+            {
+                var member = await _context.Members
+                    .Include(m => m.User)
+                    .FirstOrDefaultAsync(m => m.Id == memberId && m.Active);
+
+                if (member == null)
+                {
+                    throw new Exception("Member not found.");
+                }
+
+                if (!member.User.Token.Equals(token))
+                {
+                    throw new UnauthorizedAccessException("Unauthorized access. You can only return the book for yourself not for anyone else.");
+                }
+            }
+
             return await _context.BookBorrows
                                  .Where(b => b.MemberId == memberId && b.Active && (b.ActualReturnDate == DateTime.MinValue) && b.ClaimedReturnDate < DateTime.UtcNow )
                                  .CountAsync();

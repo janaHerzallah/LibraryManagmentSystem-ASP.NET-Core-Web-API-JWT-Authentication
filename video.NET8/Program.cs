@@ -86,6 +86,8 @@ builder.Services.AddSwaggerGen(options =>
         BearerFormat = "JWT",
         Scheme = "bearer"
     });
+    //This method is used to define the security requirements for accessing the API endpoints.
+    //It tells Swagger that a Bearer token (JWT) must be provided for authenticated endpoints.
 
     options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
     {

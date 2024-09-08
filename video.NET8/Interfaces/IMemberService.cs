@@ -16,12 +16,12 @@ namespace LibraryManagementSystem.Interfaces
             Task<bool> DeleteMemberAsync(int id);
             Task SoftDeleteMemberAsync(int id);
 
-            Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksByMemberAsync(int memberId);
+            Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksByMemberAsync(int memberId,string token);
 
-            Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksNotReturnedByMemberAsync(int memberId);
-            Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksOverDuedByMember(int memberId);
+            Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksNotReturnedByMemberAsync(int memberId, string token);
+            Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetBorrowedBooksOverDuedByMember(int memberId, string token);
 
-            Task<int> GetOverdueBooksCountByMemberAsync(int memberId);
+            Task<int> GetOverdueBooksCountByMemberAsync(int memberId, string token);
         }
     }
 
