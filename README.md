@@ -1,11 +1,75 @@
-# Library Managment System
+# Library Management System
 
-In this project, I propose a software for manageing libraries with multiple branches along with their books available to borrow by members. I built the basic APIs to manage the users including admins and members, books, authors, categories of books, branches details and the borrowing and returning operations.
-\n All APIs were authorized by users roles through JWT Bearer Authentication schema.
-\n my APIs were directly connected to the library managemnet system on pgadmin.
-\n starting off with the packages needed to configure my system:
+This project implements software to manage libraries with multiple branches, allowing members to borrow books. The project includes APIs for managing users (admins and members), books, authors, categories, library branches, as well as borrowing and returning operations.
 
-![image](https://github.com/user-attachments/assets/e284c460-c90c-41be-b6df-9169d63d01dd)
+All APIs are authorized based on user roles using the JWT Bearer Authentication scheme. The APIs are directly connected to the library management system running on PostgreSQL through pgAdmin.
 
-\n my application can be tested through the swagger configuration since it shows the ADD, UPDATE , DELETE , SOFT-DELETE , GET-ACTIVE , GET-ALL ,GET - BY -ID for all tables and also BORROW A BOOK , RETURN A BOOK 
-\n this was built on microsoft visual studio .NET version 8
+## Packages Used
+Below are the packages required for setting up the system:
+
+![Packages]![image](https://github.com/user-attachments/assets/c78bc6da-32b0-4a01-9f7e-bee7f59c8cdc)
+
+
+## Features
+- User management: Admins and members
+- Book management: Add, update, delete, and soft-delete books
+- Book borrowing and returning operations
+- Multiple branches support
+- JWT-based authentication and role-based authorization
+- PostgreSQL database integration
+
+## Testing
+The application can be tested via Swagger, which supports:
+- **Add**, **Update**, **Delete**, **Soft-Delete** functions
+- **Get Active**, **Get All**, **Get by ID** for all entities
+- **Borrow a Book**, **Return a Book**
+
+## Installation
+
+### Prerequisites
+- [.NET 6 SDK or higher](https://dotnet.microsoft.com/download/dotnet/6.0)
+- PostgreSQL
+- pgAdmin
+
+### Setup
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/your-username/library-management-system.git
+    ```
+
+2. Navigate to the project directory:
+    ```bash
+    cd library-management-system
+    ```
+
+3. Install the necessary packages:
+    ```bash
+    dotnet restore
+    ```
+
+4. Configure the PostgreSQL connection string in `appsettings.json`.
+
+5. Run database migrations:
+    ```bash
+    dotnet ef database update
+    ```
+
+6. Start the application:
+    ```bash
+    dotnet run
+    ```
+
+7. Access the Swagger UI for API testing at:
+    ```plaintext
+    http://localhost:5000/swagger
+    ```
+
+## Technologies
+- **.NET 6** – Backend framework
+- **PostgreSQL** – Database
+- **Entity Framework Core** – ORM for database interactions
+- **JWT Bearer Authentication** – Secure authentication
+- **Swagger** – API testing and documentation interface
+
+## License
+This project is licensed under the MIT License.
