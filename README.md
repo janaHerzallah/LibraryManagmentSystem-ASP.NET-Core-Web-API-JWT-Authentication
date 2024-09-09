@@ -11,8 +11,13 @@ Below are the packages required for setting up the system:
 
 
 ## Features
-- User management: Admins and members
-- Book management: Add, update, delete, and soft-delete books
+- User management: Admins and members registering their accounts and logging in 
+- Book management: Get All , GetById , search by title ,filter by author ID ,Add, update, delete, and soft-delete books
+- Author management: Get All , GetById ,Add, update, delete, and soft-delete authors
+- Categories management : Get All , GetById ,Add, update, delete, and soft-delete categories
+- Branches managment :Get All , GetById, Add, update, delete, and soft-delete branches
+- Borrowing and Returning Books By members within rules
+- Member management : Get All , GetById ,Add, update, delete, and soft-delete memebrs
 - Book borrowing and returning operations
 - Multiple branches support
 - JWT-based authentication and role-based authorization
@@ -20,9 +25,11 @@ Below are the packages required for setting up the system:
 
 ## Testing
 The application can be tested via Swagger, which supports:
-- **Add**, **Update**, **Delete**, **Soft-Delete** functions
+- **Add**, **Update**, **Delete**, **Soft-Delete** functions for all entities
 - **Get Active**, **Get All**, **Get by ID** for all entities
 - **Borrow a Book**, **Return a Book**
+- **Search a Book By Title or AuthorName**
+- **Filter Books By Availability**
 
 ## Installation
 
