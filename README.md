@@ -7,7 +7,7 @@ All APIs are authorized based on user roles using the JWT Bearer Authentication 
 ## Packages Used
 Below are the packages required for setting up the system:
 
-![Packages]![image](https://github.com/user-attachments/assets/c78bc6da-32b0-4a01-9f7e-bee7f59c8cdc)
+![image](https://github.com/user-attachments/assets/c78bc6da-32b0-4a01-9f7e-bee7f59c8cdc)
 
 
 ## Features
