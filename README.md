@@ -65,7 +65,7 @@ The application can be tested via Swagger, which supports:
     ```
 
 ## Technologies
-- **.NET 6** – Backend framework
+- **.NET 8** – Backend framework
 - **PostgreSQL** – Database
 - **Entity Framework Core** – ORM for database interactions
 - **JWT Bearer Authentication** – Secure authentication
