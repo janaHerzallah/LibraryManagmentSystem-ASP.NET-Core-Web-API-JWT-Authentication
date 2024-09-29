@@ -17,5 +17,7 @@ namespace LibraryManagmentSystem.Interfaces
         Task<ActivateAndDeactivateUserResponse> DeactivateUser(ActivateDeActivateUserRequest request);
 
         Task<ActivateAndDeactivateUserResponse> ReActivateUser(ActivateDeActivateUserRequest request);
+
+      
     }
 }

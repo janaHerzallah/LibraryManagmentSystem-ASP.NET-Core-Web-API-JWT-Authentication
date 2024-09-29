@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using LibraryManagmentSystem.Interfaces;
 using LibraryManagmentSystem.Contract.Requests;
 using LibraryManagmentSystem.Contract.Responses;
+using LibraryManagementSystem.Services;
+using LibraryManagmentSystem.Services;
 
 namespace LibraryManagementSystem.Controllers
 {
@@ -13,11 +15,13 @@ namespace LibraryManagementSystem.Controllers
     public class BorrowsController : ControllerBase
     {
         private readonly IBorrowService _borrowService;
+        private readonly IExcelService _excelService;
         
 
-        public BorrowsController(IBorrowService borrowService)
+        public BorrowsController(IBorrowService borrowService , IExcelService excelService)
         {
             _borrowService = borrowService;
+            _excelService = excelService;
             
         }
 
@@ -78,5 +82,36 @@ namespace LibraryManagementSystem.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+
+
+        // Export data to Excel
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetMembersBorrowedBooksExcel(int memberId)
+        {
+
+            try
+            {
+                // Extract and validate token
+                var token = Request.Headers["Authorization"].ToString();
+                var tokenValue = token?.StartsWith("Bearer ") == true ? token.Substring("Bearer ".Length).Trim() : token;
+
+                var borrows = await _borrowService.GetMembersBorrowedBooks(memberId, tokenValue);
+
+               
+                var fileContent = _excelService.GenerateExcelSheet(borrows, "ReportOfMembersBorrowedBooks");
+
+                return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfMembersBorrowedBooks.xlsx");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+
+       
+        }
+
+       
     }
 }

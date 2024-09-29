@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using LibraryManagmentSystem.Interfaces;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using System.Xml.Linq;
 
 namespace LibraryManagmentSystem.Controllers
 {
@@ -16,10 +17,12 @@ namespace LibraryManagmentSystem.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IExcelService _excelService;
 
-        public UserController(IUserService registerUserService)
+        public UserController(IUserService registerUserService , IExcelService excelService)
         {
             _userService = registerUserService;
+            _excelService = excelService;
         }
 
         [HttpPost]
@@ -105,6 +108,31 @@ namespace LibraryManagmentSystem.Controllers
             {
                 return NotFound(new { message = ex.Message });
             }
+        }
+
+
+        // Export data to Excel
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllMembersExcel()
+        {
+            var AllMembers = await _userService.GetAllMembers();
+           
+            var fileContent = _excelService.GenerateExcelSheet(AllMembers, "ReportOfAllMembers");
+
+            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfAllMembers.xlsx");
+        }
+
+        // Export data to Excel
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetActiveMembersExcel()
+        {
+            var ActiveMembers = await _userService.GetActiveMembers();
+
+            var fileContent = _excelService.GenerateExcelSheet(ActiveMembers, "ReportOfActiveMembers");
+
+            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfActiveMembers.xlsx");
         }
 
     }

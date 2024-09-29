@@ -16,12 +16,14 @@ namespace LibraryManagementSystem.Controllers
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
-        //private readonly IUserService _userService;
+        private readonly IExcelService _excelService;
 
-        public CategoryController(ICategoryService categoryService)
+        public CategoryController(ICategoryService categoryService , IExcelService excelService)
         {
             _categoryService = categoryService;
-            
+            _excelService = excelService;
+
+
         }
 
         [Authorize] // members and admins can access this endpoint
@@ -180,6 +182,30 @@ namespace LibraryManagementSystem.Controllers
             {
                 return NotFound(ex.Message);
             }
+        }
+
+        // Export data to Excel
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllCategoriesExcel()
+        {
+            var AllCategories = await _categoryService.GetAllCategories();
+
+            var fileContent = _excelService.GenerateExcelSheet(AllCategories, "ReportOfAllCategories");
+
+            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfAllCategories.xlsx");
+        }
+
+        // Export data to Excel
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetActiveCategoriesExcel()
+        {
+            var ActiveCategories = await _categoryService.GetActiveCategories();
+
+            var fileContent = _excelService.GenerateExcelSheet(ActiveCategories, "ReportOfActiveCategories");
+
+            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfActiveCategories.xlsx");
         }
 
         [Authorize] 

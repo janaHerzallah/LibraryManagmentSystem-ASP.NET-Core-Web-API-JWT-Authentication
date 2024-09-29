@@ -1,5 +1,6 @@
 ﻿using LibraryManagementSystem.Domain;
 using LibraryManagementSystem.Interfaces;
+using LibraryManagementSystem.Services;
 using LibraryManagmentSystem.Contract.Requests;
 using LibraryManagmentSystem.Contract.Responses;
 using LibraryManagmentSystem.Interfaces;
@@ -13,11 +14,13 @@ namespace LibraryManagementSystem.Controllers
     public class LibraryBranchController : ControllerBase
     {
         private readonly ILibraryBranchService _libraryBranchService;
+        private readonly IExcelService _excelService;
 
 
-        public LibraryBranchController(ILibraryBranchService libraryBranchService)
+        public LibraryBranchController(ILibraryBranchService libraryBranchService, IExcelService excelService)
         {
             _libraryBranchService = libraryBranchService;
+            _excelService = excelService;
         }
 
         [Authorize]
@@ -172,6 +175,31 @@ namespace LibraryManagementSystem.Controllers
             }
 
         }
+
+        // Export data to Excel
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllBranchesExcel()
+        {
+            var AllBranches = await _libraryBranchService.GetAllBranches();
+
+            var fileContent = _excelService.GenerateExcelSheet(AllBranches, "ReportOfAllBranches");
+
+            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfAllBranches.xlsx");
+        }
+
+        // Export data to Excel
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetActiveBranchesExcel()
+        {
+            var ActiveBranches = await _libraryBranchService.GetActiveBranches();
+
+            var fileContent = _excelService.GenerateExcelSheet(ActiveBranches, "ReportOfActiveBranches");
+
+            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfActiveBranches.xlsx");
+        }
+
 
     }
 }

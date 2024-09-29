@@ -4,6 +4,7 @@ using LibraryManagementSystem.Services;
 using LibraryManagmentSystem.Contract.Requests;
 using LibraryManagmentSystem.Contract.Responses;
 using LibraryManagmentSystem.Interfaces;
+using LibraryManagmentSystem.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,11 +17,13 @@ namespace LibraryManagementSystem.Controllers
     {
         private readonly IMemberService _memberService;
         private readonly IUserService _userService;
+        private readonly IExcelService _excelService;
 
-        public MemberController(IMemberService memberService, IUserService userService)
+        public MemberController(IMemberService memberService, IUserService userService, IExcelService excelService)
         {
             _memberService = memberService;
             _userService = userService;
+            _excelService = excelService;
         }
         // authorize ? will it allow members even though i have a check for admin in the method ?
         // since there is an admin validation in the method it will outweight the authorize attribute 
@@ -221,5 +224,29 @@ namespace LibraryManagementSystem.Controllers
             
         }
 
+
+        // Export data to Excel
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllMembersExcel()
+        {
+            var AllMembers = await _memberService.GetAllMembers();
+
+            var fileContent = _excelService.GenerateExcelSheet(AllMembers, "ReportOfAllMembers");
+
+            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfAllMembers.xlsx");
+        }
+
+        // Export data to Excel
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetActiveMembersExcel()
+        {
+            var ActiveMembers = await _memberService.GetActiveMembers();
+
+            var fileContent = _excelService.GenerateExcelSheet(ActiveMembers, "ReportOfActiveMembers");
+
+            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfActiveMembers.xlsx");
+        }
     }
 }

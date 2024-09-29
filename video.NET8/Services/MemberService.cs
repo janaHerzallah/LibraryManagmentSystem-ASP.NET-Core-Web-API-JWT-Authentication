@@ -33,7 +33,8 @@ namespace LibraryManagementSystem.Services
                 Active = m.Active,
                 CreatedAt = m.DateCreated,
                 UpdatedAt = m.DateModified,
-                OverDueCount = m.OverDueCount
+                OverDueCount = m.OverDueCount,
+                userId = m.UserId
             });
         }
         public async Task<IEnumerable<GetMemberResponse>> GetActiveMembers()
@@ -48,7 +49,8 @@ namespace LibraryManagementSystem.Services
                 Active = m.Active,
                 CreatedAt = m.DateCreated,
                 UpdatedAt = m.DateModified,
-                OverDueCount = m.OverDueCount
+                OverDueCount = m.OverDueCount,
+                userId = m.UserId
             });
         }
 
