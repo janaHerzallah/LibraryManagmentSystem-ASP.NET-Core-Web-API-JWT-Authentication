@@ -5,6 +5,7 @@ using LibraryManagmentSystem.Contract.Requests;
 using LibraryManagmentSystem.Contract.Responses;
 using LibraryManagmentSystem.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -183,5 +184,148 @@ namespace LibraryManagementSystem.Services
                 ModifiedAt = b.DateModified
             });
         }
+
+        public async Task<(List<AddBookRequest> validBooks, List<validationErrorListResonse> validationErrors)> ProcessExcelFileAsync(IFormFile excelFile)
+        {
+            if (excelFile == null || excelFile.Length == 0)
+            {
+                throw new ArgumentException("No file uploaded or file is empty.");
+            }
+
+            var validBooks = new List<AddBookRequest>();
+            var validationErrorList = new List<validationErrorListResonse>();
+
+            using (var stream = new MemoryStream())
+            {
+                await excelFile.CopyToAsync(stream);
+                using (var package = new ExcelPackage(stream))
+                {
+                    var worksheet = package.Workbook.Worksheets[0]; // Assume the data is in the first worksheet
+                    int rowCount = worksheet.Dimension.Rows;
+
+                    for (int row = 2; row <= rowCount; row++)
+                    {
+                        var errorMessage = string.Empty;
+                        var haveError = false;
+
+                        // Validate Title
+                        var titleText = worksheet.Cells[row, 1].Text;
+                        if (string.IsNullOrWhiteSpace(titleText))
+                        {
+                            errorMessage += "Title is required. ";
+                            haveError = true;
+                        }
+                        else if (double.TryParse(titleText, out _))
+                        {
+                            errorMessage += "Title must be a string, not a number. ";
+                            haveError = true;
+                        }
+
+                        // Validate Available Copies
+                        var availableCopiesText = worksheet.Cells[row, 2].Text;
+                        if (string.IsNullOrWhiteSpace(availableCopiesText))
+                        {
+                            errorMessage += "Available Copies are required. ";
+                            haveError = true;
+                        }
+                        else if (!int.TryParse(availableCopiesText, out _))
+                        {
+                            errorMessage += "Available Copies must be an integer. ";
+                            haveError = true;
+                        }
+
+                        // Validate Total Copies
+                        var totalCopiesText = worksheet.Cells[row, 3].Text;
+                        if (string.IsNullOrWhiteSpace(totalCopiesText))
+                        {
+                            errorMessage += "Total Copies are required. ";
+                            haveError = true;
+                        }
+                        else if (!int.TryParse(totalCopiesText, out _))
+                        {
+                            errorMessage += "Total Copies must be an integer. ";
+                            haveError = true;
+                        }
+
+                        // Validate Author ID
+                        var authorIdText = worksheet.Cells[row, 4].Text;
+                        if (string.IsNullOrWhiteSpace(authorIdText))
+                        {
+                            errorMessage += "Author ID is required. ";
+                            haveError = true;
+                        }
+                        else if (!int.TryParse(authorIdText, out _))
+                        {
+                            errorMessage += "Author ID must be an integer. ";
+                            haveError = true;
+                        }
+
+                        // Validate Category ID
+                        var categoryIdText = worksheet.Cells[row, 5].Text;
+                        if (string.IsNullOrWhiteSpace(categoryIdText))
+                        {
+                            errorMessage += "Category ID is required. ";
+                            haveError = true;
+                        }
+                        else if (!int.TryParse(categoryIdText, out _))
+                        {
+                            errorMessage += "Category ID must be an integer. ";
+                            haveError = true;
+                        }
+
+                        // Validate Library Branch ID
+                        var libraryBranchIdText = worksheet.Cells[row, 6].Text;
+                        if (string.IsNullOrWhiteSpace(libraryBranchIdText))
+                        {
+                            errorMessage += "Library Branch ID is required. ";
+                            haveError = true;
+                        }
+                        else if (!int.TryParse(libraryBranchIdText, out _))
+                        {
+                            errorMessage += "Library Branch ID must be an integer. ";
+                            haveError = true;
+                        }
+
+                        // If there are errors, add to the error list
+                        if (haveError)
+                        {
+                            validationErrorList.Add(new validationErrorListResonse
+                            {
+                                RowNumber = row,
+                                Title = titleText,
+                                ErrorMessage = errorMessage.Trim()
+                            });
+                            continue;
+                        }
+
+                        // If no errors, create book request object
+                        var bookRequest = new AddBookRequest
+                        {
+                            Title = titleText,
+                            AvailableCopies = TryParseInt(availableCopiesText),
+                            TotalCopies = TryParseInt(totalCopiesText),
+                            AuthorId = TryParseInt(authorIdText),
+                            CategoryId = TryParseInt(categoryIdText),
+                            LibraryBranchId = TryParseInt(libraryBranchIdText)
+                        };
+
+                        validBooks.Add(bookRequest); // Add valid book to the list
+                    }
+                }
+            }
+
+            return (validBooks, validationErrorList);
+        }
+
+        private int? TryParseInt(string value)
+        {
+            if (int.TryParse(value, out int result))
+            {
+                return result;
+            }
+            return null;
+        }
     }
+
 }
+

@@ -143,8 +143,6 @@ namespace LibraryManagementSystem.Services
                 Books = author.Books,
                 Active = authorDataBase.Active
 
-
-
             };
         }
 

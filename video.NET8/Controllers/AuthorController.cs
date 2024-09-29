@@ -15,12 +15,14 @@ namespace LibraryManagmentSystem.Controllers
     {
         private readonly IAuthorService _authorService;
         private readonly IUserService _userService;
+        private readonly IExcelService _excelService;
 
 
-        public AuthorsController(IAuthorService authorService, IUserService userService)
+        public AuthorsController(IAuthorService authorService, IUserService userService, IExcelService excelService)
         {
             _authorService = authorService;
             _userService = userService;
+            _excelService = excelService;
         }
 
         // GET: api/authors
@@ -177,6 +179,31 @@ namespace LibraryManagmentSystem.Controllers
             }
             
         }
+
+        // Export data to Excel
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllAuthorsExcel()
+        {
+            var AllAuthors = await _authorService.GetAllAuthors();
+
+            var fileContent = _excelService.GenerateExcelSheet(AllAuthors, "ReportOfAllAuthors");
+
+            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfAllAuthors.xlsx");
+        }
+
+        // Export data to Excel
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetActiveAuthorsExcel()
+        {
+            var ActiveAuthors = await _authorService.GetActiveAuthors();
+
+            var fileContent = _excelService.GenerateExcelSheet(ActiveAuthors, "ReportOfActiveAuthors");
+
+            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfActiveMembers.xlsx");
+        }
+
 
 
 

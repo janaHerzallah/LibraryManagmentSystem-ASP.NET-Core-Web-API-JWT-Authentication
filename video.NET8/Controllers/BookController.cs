@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using LibraryManagmentSystem.Contract.Requests;
+using System.ComponentModel.DataAnnotations;
+using OfficeOpenXml;
 
 
 namespace LibraryManagmentSystem.Controllers
@@ -25,12 +27,15 @@ namespace LibraryManagmentSystem.Controllers
     {
         private readonly IBookService _bookService;
         private readonly IUserService _userService;
+        private readonly IExcelService _excelService;
 
 
-        public BooksController(IBookService bookService, IUserService userService)
+
+        public BooksController(IBookService bookService, IUserService userService , IExcelService excelService)
         {
             _bookService = bookService;
             _userService = userService;
+            _excelService = excelService;
         }
 
         [HttpGet]
@@ -144,6 +149,61 @@ namespace LibraryManagmentSystem.Controllers
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
+            }
+        }
+
+
+        // Export data to Excel
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllBooksExcel()
+        {
+            var AllBooks = await _bookService.GetAllBooks();
+
+            var fileContent = _excelService.GenerateExcelSheet(AllBooks, "ReportOfAllBooks");
+
+            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfAllBooks.xlsx");
+        }
+
+        // Export data to Excel
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetActiveBooksExcel()
+        {
+            var ActiveBooks = await _bookService.GetActiveBooks();
+
+            var fileContent = _excelService.GenerateExcelSheet(ActiveBooks, "ReportOfActiveBooks");
+
+            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfActiveBooks.xlsx");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ImportBooksFromExcel(IFormFile excelFile)
+        {
+            try
+            {
+                var (validBooks, validationErrors) = await _bookService.ProcessExcelFileAsync(excelFile);
+
+                // Create books in the database for valid entries
+                foreach (var book in validBooks)
+                {
+                    await _bookService.AddBook(book);
+                }
+
+                return Ok(new
+                {
+                    message = "Books import completed.",
+                    successfulBooks = validBooks,
+                    validationErrors = validationErrors
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
             }
         }
     }

@@ -7,6 +7,10 @@ using LibraryManagementSystem.Services;
 using LibraryManagmentSystem.Interfaces;
 using System.Text;
 using LibraryManagementSystem.Interfaces;
+using OfficeOpenXml;
+using LibraryManagementSystem.Services;
+using LibraryManagmentSystem.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +30,9 @@ builder.Services.AddScoped<IMemberService, MemberService>();
 builder.Services.AddScoped<IBorrowService, BorrowService>();
 builder.Services.AddScoped<ILibraryBranchService, LibraryBranchService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IExcelService, ExcelService>();
+
+ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
 
 
