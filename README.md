@@ -22,6 +22,7 @@ Below are the packages required for setting up the system:
 - Multiple branches support
 - JWT-based authentication and role-based authorization
 - PostgreSQL database integration
+- Excel Integration for data import/export using EEPlus
 
 ## Testing
 The application can be tested via Swagger, which supports:
