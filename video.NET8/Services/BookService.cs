@@ -185,7 +185,7 @@ namespace LibraryManagementSystem.Services
             });
         }
 
-        public async Task<(List<AddBookRequest> validBooks, List<validationErrorListResonse> validationErrors)> ProcessExcelFileAsync(IFormFile excelFile)
+        public async Task<(List<AddBookRequest> validBooks, List<validationErrorBookListResponse> validationErrors)> ImportBooksFromExcel(IFormFile excelFile)
         {
             if (excelFile == null || excelFile.Length == 0)
             {
@@ -193,7 +193,7 @@ namespace LibraryManagementSystem.Services
             }
 
             var validBooks = new List<AddBookRequest>();
-            var validationErrorList = new List<validationErrorListResonse>();
+            var validationErrorList = new List<validationErrorBookListResponse>();
 
             using (var stream = new MemoryStream())
             {
@@ -201,6 +201,25 @@ namespace LibraryManagementSystem.Services
                 using (var package = new ExcelPackage(stream))
                 {
                     var worksheet = package.Workbook.Worksheets[0]; // Assume the data is in the first worksheet
+
+
+                    // Validate columns
+                    var expectedColumns = new List<string> { "Title", "AvailableCopies", "TotalCopies", "AuthorId","CategoryId", "LibraryBranchId" };
+                    var columnNames = new List<string>();
+
+                    for (int col = 1; col <= worksheet.Dimension.Columns; col++)
+                    {
+                        var columnName = worksheet.Cells[1, col].Text.Trim();
+                        columnNames.Add(columnName);
+                    }
+
+                    // Check if all expected columns are present and no extra columns exist
+                    if (!expectedColumns.SequenceEqual(columnNames))
+                    {
+                        throw new ArgumentException($"Column validation failed. Expected columns: {string.Join(", ", expectedColumns)}. Found: {string.Join(", ", columnNames)}");
+                    }
+
+
                     int rowCount = worksheet.Dimension.Rows;
 
                     for (int row = 2; row <= rowCount; row++)
@@ -289,7 +308,7 @@ namespace LibraryManagementSystem.Services
                         // If there are errors, add to the error list
                         if (haveError)
                         {
-                            validationErrorList.Add(new validationErrorListResonse
+                            validationErrorList.Add(new validationErrorBookListResponse
                             {
                                 RowNumber = row,
                                 Title = titleText,

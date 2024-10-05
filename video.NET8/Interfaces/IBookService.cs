@@ -17,6 +17,6 @@ namespace LibraryManagmentSystem.Interfaces
         Task<bool> DeleteBook(int id); // admin only
         Task SoftDeleteBook(int id); // admin only
 
-        Task<(List<AddBookRequest> validBooks, List<validationErrorListResonse> validationErrors)> ProcessExcelFileAsync(IFormFile excelFile);
+        Task<(List<AddBookRequest> validBooks, List<validationErrorBookListResponse> validationErrors)> ImportBooksFromExcel(IFormFile excelFile);
     }
 }

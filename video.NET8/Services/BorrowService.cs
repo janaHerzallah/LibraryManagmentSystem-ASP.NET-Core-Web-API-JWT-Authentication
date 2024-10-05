@@ -5,6 +5,7 @@ using LibraryManagmentSystem.Contract.Requests;
 using LibraryManagmentSystem.Contract.Responses;
 using LibraryManagmentSystem.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
 
 namespace LibraryManagementSystem.Services
 {
@@ -231,6 +232,202 @@ namespace LibraryManagementSystem.Services
         }
 
 
+
+
+        public async Task<(List<Borrow> validBorrows, List<ValidationErrorBorrowResponse> validationErrors)> ImportBorrowsFromExcel(IFormFile excelFile)
+        {
+            if (excelFile == null || excelFile.Length == 0)
+            {
+                throw new ArgumentException("No file uploaded or file is empty.");
+            }
+
+            var validBorrows = new List<Borrow>();
+            var validationErrorList = new List<ValidationErrorBorrowResponse>();
+
+            using (var stream = new MemoryStream())
+            {
+                await excelFile.CopyToAsync(stream);
+                using (var package = new ExcelPackage(stream))
+                {
+                    var worksheet = package.Workbook.Worksheets[0]; // Assume the data is in the first worksheet
+
+                    // Define expected column names
+                    var expectedColumnNames = new List<string> { "BookId", "MemberId", "BorrowDate", "ClaimedReturnDate", "ActualReturnDate", "Active" };
+                    int expectedColumnCount = expectedColumnNames.Count;
+
+                    // Retrieve column names from the first row (header row)
+                    var columnNames = new List<string>();
+                    for (int col = 1; col <= expectedColumnCount; col++) // Assuming columns start at index 1
+                    {
+                        columnNames.Add(worksheet.Cells[1, col].Text.Trim()); // Get the column name and trim any whitespace
+                    }
+
+                    // Validate the number of columns
+                    if (columnNames.Count != expectedColumnCount)
+                    {
+                        throw new Exception($"The number of columns in the sheet ({columnNames.Count}) does not match the expected number ({expectedColumnCount}).");
+                    }
+
+                    // Validate column names
+                    for (int i = 0; i < expectedColumnCount; i++)
+                    {
+                        if (!columnNames[i].Equals(expectedColumnNames[i], StringComparison.OrdinalIgnoreCase))
+                        {
+                            throw new Exception($"Column name mismatch at position {i + 1}. Expected '{expectedColumnNames[i]}', but got '{columnNames[i]}'.");
+                        }
+                    }
+
+                    int rowCount = worksheet.Dimension.Rows;
+
+                    for (int row = 2; row <= rowCount; row++)
+                    {
+                        var errorMessage = string.Empty;
+                        var haveError = false;
+
+                        // Validate BookId
+                        var bookIdText = worksheet.Cells[row, 1].Text;
+                        if (!int.TryParse(bookIdText, out var bookId))
+                        {
+                            errorMessage += "BookId is required and must be an integer. ";
+                            haveError = true;
+                        }
+
+                        // Validate MemberId
+                        var memberIdText = worksheet.Cells[row, 2].Text;
+                        if (!int.TryParse(memberIdText, out var memberId))
+                        {
+                            errorMessage += "MemberId is required and must be an integer. ";
+                            haveError = true;
+                        }
+
+                        // Validate BorrowDate (initialize with a default value)
+                        var borrowDateText = worksheet.Cells[row, 3].Text;
+                        var borrowDate = DateTime.MinValue;
+                        if (!IsValidDateTimeFormat(borrowDateText) || !DateTime.TryParse(borrowDateText, out borrowDate))
+                        {
+                            errorMessage += "BorrowDate is required and must be in the format 'YYYY-MM-DD' followed by valid time characters (numbers, : or +). ";
+                            haveError = true;
+                        }
+
+                        // Validate ClaimedReturnDate (initialize with a default value)
+                        var claimedReturnDateText = worksheet.Cells[row, 4].Text;
+                        var claimedReturnDate = DateTime.MinValue;
+                        if (!IsValidDateTimeFormat(claimedReturnDateText) || !DateTime.TryParse(claimedReturnDateText, out claimedReturnDate))
+                        {
+                            errorMessage += "ClaimedReturnDate is required and must be in the format 'YYYY-MM-DD' followed by valid time characters (numbers, : or +). ";
+                            haveError = true;
+                        }
+
+                        // Validate ActualReturnDate (optional, initialize with a default value)
+                        var actualReturnDateText = worksheet.Cells[row, 5].Text;
+                        var actualReturnDate = DateTime.MinValue;
+                        if (string.IsNullOrWhiteSpace(actualReturnDateText))
+                        {
+                            actualReturnDate = DateTime.MinValue; // If no value provided
+                        }
+                        else
+                        {
+                            if (!IsValidDateTimeFormat(actualReturnDateText) || !DateTime.TryParse(actualReturnDateText, out actualReturnDate))
+                            {
+                                errorMessage += "ActualReturnDate must be in the format 'YYYY-MM-DD' followed by valid time characters (numbers, : or +). ";
+                                haveError = true;
+                            }
+                        }
+
+                        // Validate Active (boolean)
+                        var activeText = worksheet.Cells[row, 6].Text;
+                        if (!bool.TryParse(activeText, out bool active))
+                        {
+                            errorMessage += "Active is required and must be a boolean. ";
+                            haveError = true;
+                        }
+
+                        // If there are errors, add to the validation error list
+                        if (haveError)
+                        {
+                            validationErrorList.Add(new ValidationErrorBorrowResponse
+                            {
+                                RowNumber = row,
+                                BookId = bookIdText,
+                                MemberId = memberIdText,
+                                BorrowDate = borrowDateText,
+                                ClaimedReturnDate = claimedReturnDateText,
+                                ActualReturnDate = actualReturnDateText,
+                                ErrorMessage = errorMessage.Trim()
+                            });
+                            continue;
+                        }
+
+                        // If no errors, create a valid Borrow object
+                        var borrow = new Borrow
+                        {
+                            BookId = bookId,
+                            MemberId = memberId,
+                            BorrowDate = borrowDate.ToUniversalTime(), // Convert to UTC
+                            ClaimedReturnDate = claimedReturnDate.ToUniversalTime(), // Convert to UTC
+                            ActualReturnDate = actualReturnDate == DateTime.MinValue ? actualReturnDate : actualReturnDate.ToUniversalTime(), // Convert to UTC if valid
+                            Active = active,
+                            DateCreated = DateTime.UtcNow,
+                            DateModified = DateTime.UtcNow
+
+                        };
+
+
+                        validBorrows.Add(borrow);
+                    }
+
+                }
+            }
+
+            return (validBorrows, validationErrorList);
+        }
+
+        private bool IsValidDateTimeFormat(string dateTimeText)
+        {
+            // Regular expression to match the format "YYYY-MM-DD" followed by either a number, ':' or '+'
+            var regex = new System.Text.RegularExpressions.Regex(@"^\d{4}-\d{2}-\d{2}[\s](\d+|[:+])");
+            return regex.IsMatch(dateTimeText);
+        }
+
+
+        public async Task AddBorrowRecordfromExcel(Borrow borrow)
+        {
+            // Check if the Book and Member exist
+            var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == borrow.BookId && b.Active);
+            var member = await _context.Members.FirstOrDefaultAsync(m => m.Id == borrow.MemberId && m.Active);
+
+            if (book == null)
+            {
+                throw new ArgumentException("Invalid BookId. The book does not exist or is inactive.");
+            }
+
+            if (member == null)
+            {
+                throw new ArgumentException("Invalid MemberId. The member does not exist or is inactive.");
+            }
+
+            // Add the borrow record to the database
+            _context.BookBorrows.Add(borrow);
+
+            // Save changes to the database
+            await _context.SaveChangesAsync();
+        }
+
+
+        public async Task<IEnumerable<ExcelBorrowBookResponse>> ExportAllBorrowsTOExcel()
+        {
+            var borrow = await _context.BookBorrows.ToListAsync();
+
+            return borrow.Select(m => new ExcelBorrowBookResponse
+            {
+               bookId= m.Id,
+               MemberId = m.MemberId,
+               BorrowDate = m.BorrowDate,
+               DateCreated = m.DateCreated,
+               DateModified = m.DateModified,
+               ClaimedReturnDate = m.ClaimedReturnDate
+            });
+        }
 
     }
 }

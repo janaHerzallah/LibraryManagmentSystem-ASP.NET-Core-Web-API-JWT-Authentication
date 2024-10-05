@@ -155,8 +155,8 @@ namespace LibraryManagmentSystem.Controllers
 
         // Export data to Excel
         [HttpGet]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllBooksExcel()
+        //[Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ExportBooksToExcel()
         {
             var AllBooks = await _bookService.GetAllBooks();
 
@@ -165,24 +165,12 @@ namespace LibraryManagmentSystem.Controllers
             return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfAllBooks.xlsx");
         }
 
-        // Export data to Excel
-        [HttpGet]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetActiveBooksExcel()
-        {
-            var ActiveBooks = await _bookService.GetActiveBooks();
-
-            var fileContent = _excelService.GenerateExcelSheet(ActiveBooks, "ReportOfActiveBooks");
-
-            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfActiveBooks.xlsx");
-        }
-
         [HttpPost]
         public async Task<IActionResult> ImportBooksFromExcel(IFormFile excelFile)
         {
             try
             {
-                var (validBooks, validationErrors) = await _bookService.ProcessExcelFileAsync(excelFile);
+                var (validBooks, validationErrors) = await _bookService.ImportBooksFromExcel(excelFile);
 
                 // Create books in the database for valid entries
                 foreach (var book in validBooks)

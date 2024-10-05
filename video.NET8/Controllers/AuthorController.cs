@@ -1,4 +1,5 @@
-﻿using LibraryManagementSystem.Domain;
+﻿using LibraryManagementSystem.Contract.Requests;
+using LibraryManagementSystem.Domain;
 using LibraryManagementSystem.Services;
 using LibraryManagmentSystem.Contract.Requests;
 using LibraryManagmentSystem.Contract.Responses;
@@ -6,6 +7,7 @@ using LibraryManagmentSystem.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OfficeOpenXml;
 
 namespace LibraryManagmentSystem.Controllers
 {
@@ -194,16 +196,46 @@ namespace LibraryManagmentSystem.Controllers
 
         // Export data to Excel
         [HttpGet]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetActiveAuthorsExcel()
+        //[Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ExportAuthorsToExcel()
         {
             var ActiveAuthors = await _authorService.GetActiveAuthors();
 
             var fileContent = _excelService.GenerateExcelSheet(ActiveAuthors, "ReportOfActiveAuthors");
 
-            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfActiveMembers.xlsx");
+            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfActiveAuthors.xlsx");
         }
 
+
+        [HttpPost]
+        public async Task<IActionResult> ImportAuthorsFromExcel(IFormFile excelFile)
+        {
+            try
+            {
+                var (validAuthors, validationErrors) = await _authorService.ImportAuthorsFromExcel(excelFile);
+
+                // Create authors in the database for valid entries
+                foreach (var author in validAuthors)
+                {
+                    await _authorService.AddAuthor(author);
+                }
+
+                return Ok(new
+                {
+                    message = "Authors import completed.",
+                    successfulAuthors = validAuthors,
+                    validationErrors = validationErrors
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
 
 
 

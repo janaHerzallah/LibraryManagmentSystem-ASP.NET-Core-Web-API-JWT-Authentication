@@ -6,6 +6,8 @@ using LibraryManagmentSystem.Contract.Responses;
 using LibraryManagmentSystem.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
+
 
 namespace LibraryManagementSystem.Services
 {
@@ -199,6 +201,115 @@ namespace LibraryManagementSystem.Services
         _context.Authors.Update(author);
         await _context.SaveChangesAsync();
     }
+
+        public async Task<(List<AddAuthorRequest> validAuthors, List<validationErrorAuthorListResponse> validationErrors)> ImportAuthorsFromExcel(IFormFile excelFile)
+        {
+            if (excelFile == null || excelFile.Length == 0)
+            {
+                throw new ArgumentException("No file uploaded or file is empty.");
+            }
+
+            var validAuthors = new List<AddAuthorRequest>();
+            var validationErrorList = new List<validationErrorAuthorListResponse>();
+
+            using (var stream = new MemoryStream())
+            {
+                await excelFile.CopyToAsync(stream);
+                using (var package = new ExcelPackage(stream))
+                {
+                    var worksheet = package.Workbook.Worksheets[0]; // Assume the data is in the first worksheet
+
+                    // Validate columns
+                    var expectedColumns = new List<string> { "Name", "Books" };
+                    var columnNames = new List<string>();
+
+                    for (int col = 1; col <= worksheet.Dimension.Columns; col++)
+                    {
+                        var columnName = worksheet.Cells[1, col].Text.Trim();
+                        columnNames.Add(columnName);
+                    }
+
+                    // Check if all expected columns are present and no extra columns exist
+                    if (!expectedColumns.SequenceEqual(columnNames))
+                    {
+                        throw new ArgumentException($"Column validation failed. Expected columns: {string.Join(", ", expectedColumns)}. Found: {string.Join(", ", columnNames)}");
+                    }
+
+                    int rowCount = worksheet.Dimension.Rows;
+
+                    for (int row = 2; row <= rowCount; row++)
+                    {
+                        var errorMessage = string.Empty;
+                        var haveError = false;
+
+                        // Validate Author Name
+                        var nameText = worksheet.Cells[row, 1].Text;
+                        if (string.IsNullOrWhiteSpace(nameText))
+                        {
+                            errorMessage += "Author name is required. ";
+                            haveError = true;
+                        }
+                        else if (double.TryParse(nameText, out _))
+                        {
+                            errorMessage += "Author name must be a string, not a number. ";
+                            haveError = true;
+                        }
+
+                        // Optional: Validate if there are books (can be skipped if adding books separately)
+                        var booksText = worksheet.Cells[row, 2].Text;
+                        var books = new List<AddAuthorsBooksRequest>();
+
+                        if (!string.IsNullOrWhiteSpace(booksText))
+                        {
+                            // Assuming booksText is a comma-separated list of book titles
+                            var bookTitles = booksText.Split(',');
+
+                            foreach (var bookTitle in bookTitles)
+                            {
+                                if (!string.IsNullOrWhiteSpace(bookTitle))
+                                {
+                                    books.Add(new AddAuthorsBooksRequest { Title = bookTitle.Trim() });
+                                }
+                            }
+                        }
+
+                        // If there are errors, add to the error list
+                        if (haveError)
+                        {
+                            validationErrorList.Add(new validationErrorAuthorListResponse
+                            {
+                                RowNumber = row,
+                                Name = nameText,
+                                ErrorMessage = errorMessage.Trim()
+                            });
+                            continue;
+                        }
+
+                        // If no errors, create author request object
+                        var authorRequest = new AddAuthorRequest
+                        {
+                            Name = nameText,
+                            Books = books
+                        };
+
+                        validAuthors.Add(authorRequest); // Add valid author to the list
+                    }
+                }
+            }
+
+            return (validAuthors, validationErrorList);
+        }
+
+        private int? TryParseInt(string value)
+        {
+            if (int.TryParse(value, out int result))
+            {
+                return result;
+            }
+            return null;
+        }
+
+
     }
 }
 

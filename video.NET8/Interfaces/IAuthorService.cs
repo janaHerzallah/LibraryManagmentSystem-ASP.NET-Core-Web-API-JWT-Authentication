@@ -16,5 +16,7 @@ namespace LibraryManagmentSystem.Interfaces
         Task<UpdateAuthorResponse> UpdateAuthor(int id, UpdateAuthorRequest updatedAuthor); // admin only
         Task<bool> DeleteAuthor(int id); // admin only
         Task SoftDeleteAuthor(int id); // admin only
+
+        Task<(List<AddAuthorRequest> validAuthors, List<validationErrorAuthorListResponse> validationErrors)> ImportAuthorsFromExcel(IFormFile excelFile);
     }
 }

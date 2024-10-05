@@ -30,7 +30,7 @@ namespace LibraryManagementSystem.Controllers
             var branches = await _libraryBranchService.GetActiveBranches();
             return Ok(branches);
         }
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet] // admin and member can access this endpoint
         public async Task<ActionResult<IEnumerable<GetLibraryBranchResponse>>> GetAllBranches()
         {
@@ -50,10 +50,10 @@ namespace LibraryManagementSystem.Controllers
             }
             catch (Exception EX)
             {
-                return StatusCode(500,new { message = EX.Message });
+                return StatusCode(500, new { message = EX.Message });
 
             }
-           
+
         }
 
         [HttpPost]
@@ -69,7 +69,7 @@ namespace LibraryManagementSystem.Controllers
             {
                 return StatusCode(500, new { message = ex.Message });
             }
-            
+
         }
 
         [HttpPut("{id}")]
@@ -81,7 +81,7 @@ namespace LibraryManagementSystem.Controllers
                 var updatedBranch = await _libraryBranchService.UpdateBranch(id, branch);
                 return Ok(updatedBranch);
             }
-            
+
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });
@@ -101,7 +101,7 @@ namespace LibraryManagementSystem.Controllers
             {
                 return StatusCode(500, new { message = ex.Message });
             }
-            
+
         }
 
         [HttpPatch("{id}")]
@@ -117,7 +117,7 @@ namespace LibraryManagementSystem.Controllers
             {
                 return StatusCode(500, new { message = ex.Message });
             }
-            
+
         }
 
         [Authorize(Roles = "Admin")]
@@ -178,8 +178,8 @@ namespace LibraryManagementSystem.Controllers
 
         // Export data to Excel
         [HttpGet]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllBranchesExcel()
+        // [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ExportBranchesToExcel()
         {
             var AllBranches = await _libraryBranchService.GetAllBranches();
 
@@ -188,18 +188,36 @@ namespace LibraryManagementSystem.Controllers
             return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfAllBranches.xlsx");
         }
 
-        // Export data to Excel
-        [HttpGet]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetActiveBranchesExcel()
+
+
+        [HttpPost]
+        public async Task<IActionResult> ImportBranchesFromExcel(IFormFile excelFile)
         {
-            var ActiveBranches = await _libraryBranchService.GetActiveBranches();
+            try
+            {
+                var (validBranches, validationErrors) = await _libraryBranchService.ImportBranchesFromExcel(excelFile);
 
-            var fileContent = _excelService.GenerateExcelSheet(ActiveBranches, "ReportOfActiveBranches");
+                // Create branches in the database for valid entries
+                foreach (var branch in validBranches)
+                {
+                    await _libraryBranchService.AddBranch(branch);
+                }
 
-            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfActiveBranches.xlsx");
+                return Ok(new
+                {
+                    message = "Branches import completed.",
+                    successfulBranches = validBranches,
+                    validationErrors = validationErrors
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
-
-
     }
 }
