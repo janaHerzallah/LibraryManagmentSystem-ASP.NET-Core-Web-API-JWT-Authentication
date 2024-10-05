@@ -4,6 +4,7 @@ using LibraryManagementSystem.Interfaces;
 using LibraryManagmentSystem.Contract.Requests;
 using LibraryManagmentSystem.Contract.Responses;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -267,6 +268,99 @@ namespace LibraryManagementSystem.Services
             }).ToListAsync();
         }
 
+        public async Task<(List<AddCategoryRequest> validCategories, List<validationErrorCategoryListResponse> validationErrors)> ImportCategoriesFromExcel(IFormFile excelFile)
+        {
+            if (excelFile == null || excelFile.Length == 0)
+            {
+                throw new ArgumentException("No file uploaded or file is empty.");
+            }
+
+            var validCategories = new List<AddCategoryRequest>();
+            var validationErrorList = new List<validationErrorCategoryListResponse>();
+
+            using (var stream = new MemoryStream())
+            {
+                await excelFile.CopyToAsync(stream);
+                using (var package = new ExcelPackage(stream))
+                {
+                    var worksheet = package.Workbook.Worksheets[0]; // Assume the data is in the first worksheet
+
+
+
+                    // Validate columns
+                    var expectedColumns = new List<string> { "Name", "Description" };
+                    var columnNames = new List<string>();
+
+                    for (int col = 1; col <= worksheet.Dimension.Columns; col++)
+                    {
+                        var columnName = worksheet.Cells[1, col].Text.Trim();
+                        columnNames.Add(columnName);
+                    }
+
+                    // Check if all expected columns are present and no extra columns exist
+                    if (!expectedColumns.SequenceEqual(columnNames))
+                    {
+                        throw new ArgumentException($"Column validation failed. Expected columns: {string.Join(", ", expectedColumns)}. Found: {string.Join(", ", columnNames)}");
+                    }
+
+                    int rowCount = worksheet.Dimension.Rows;
+
+                    for (int row = 2; row <= rowCount; row++)
+                    {
+                        var errorMessage = string.Empty;
+                        var haveError = false;
+
+                        // Validate Category Name
+                        var nameText = worksheet.Cells[row, 1].Text;
+                        if (string.IsNullOrWhiteSpace(nameText))
+                        {
+                            errorMessage += "Category name is required. ";
+                            haveError = true;
+                        }
+                        else if (double.TryParse(nameText, out _))
+                        {
+                            errorMessage += "Category name must be a string, not a number. ";
+                            haveError = true;
+                        }
+
+                        // Validate Description (optional)
+                        var descriptionText = worksheet.Cells[row, 2].Text;
+                        if (!string.IsNullOrWhiteSpace(descriptionText))
+                        {
+                            if (double.TryParse(descriptionText, out _))
+                            {
+                                errorMessage += "Description must be a string, not a number. ";
+                                haveError = true;
+                            }
+                        }
+
+                        // If there are errors, add to the error list
+                        if (haveError)
+                        {
+                            validationErrorList.Add(new validationErrorCategoryListResponse
+                            {
+                                RowNumber = row,
+                                Name = nameText,
+                                Description = descriptionText,
+                                ErrorMessage = errorMessage.Trim()
+                            });
+                            continue;
+                        }
+
+                        // If no errors, create category request object
+                        var categoryRequest = new AddCategoryRequest
+                        {
+                            Name = nameText,
+                            Description = string.IsNullOrWhiteSpace(descriptionText) ? null : descriptionText
+                        };
+
+                        validCategories.Add(categoryRequest); // Add valid category to the list
+                    }
+                }
+            }
+
+            return (validCategories, validationErrorList);
+        }
 
 
     }

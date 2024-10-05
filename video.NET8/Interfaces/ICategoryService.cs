@@ -18,11 +18,16 @@ namespace LibraryManagementSystem.Interfaces
 
         Task<IEnumerable<GetBooksDetailsResponse>> GetBooksInCategory(int categoryId);
 
+
         Task AssignBookToCategory(int categoryId, int bookId);
 
         Task<IEnumerable<GetBooksDetailsResponse>> FilterBooks(int? authorId = null, bool? available = null);
 
 
         Task<IEnumerable<GetBooksDetailsResponse>> SearchBooks(string? title = null, string? authorName = null);
+
+        Task<(List<AddCategoryRequest> validCategories, List<validationErrorCategoryListResponse> validationErrors)> ImportCategoriesFromExcel(IFormFile excelFile);
+
+
     }
 }

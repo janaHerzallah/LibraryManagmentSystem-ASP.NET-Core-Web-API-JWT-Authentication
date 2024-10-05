@@ -1,6 +1,6 @@
-﻿namespace LibraryManagmentSystem.Contract.Requests
+﻿namespace LibraryManagmentSystem.Contract.Responses
 {
-    public class validationErrorListResonse
+    public class validationErrorBookListResponse
     {
         public string Title { get; set; }
         public string ErrorMessage { get; set; }

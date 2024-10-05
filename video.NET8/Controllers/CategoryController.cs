@@ -184,29 +184,9 @@ namespace LibraryManagementSystem.Controllers
             }
         }
 
-        // Export data to Excel
-        [HttpGet]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllCategoriesExcel()
-        {
-            var AllCategories = await _categoryService.GetAllCategories();
+       
 
-            var fileContent = _excelService.GenerateExcelSheet(AllCategories, "ReportOfAllCategories");
-
-            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfAllCategories.xlsx");
-        }
-
-        // Export data to Excel
-        [HttpGet]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetActiveCategoriesExcel()
-        {
-            var ActiveCategories = await _categoryService.GetActiveCategories();
-
-            var fileContent = _excelService.GenerateExcelSheet(ActiveCategories, "ReportOfActiveCategories");
-
-            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfActiveCategories.xlsx");
-        }
+       
 
         [Authorize] 
         [HttpGet]
@@ -222,6 +202,50 @@ namespace LibraryManagementSystem.Controllers
         {
             var books = await _categoryService.SearchBooks(title, authorName);
             return Ok(books);
+        }
+
+
+        // Export data to Excel
+        [HttpGet]
+       // [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ExportCategoriesToExcel()
+        {
+            var AllCategories = await _categoryService.GetAllCategories();
+
+            var fileContent = _excelService.GenerateExcelSheet(AllCategories, "ReportOfAllCategories");
+
+            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfAllCategories.xlsx");
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> ImportCategoriesFromExcel(IFormFile excelFile)
+        {
+            try
+            {
+                var (validCategories, validationErrors) = await _categoryService.ImportCategoriesFromExcel(excelFile);
+
+                // Create categories in the database for valid entries
+                foreach (var category in validCategories)
+                {
+                    await _categoryService.AddCategory(category);
+                }
+
+                return Ok(new
+                {
+                    message = "Categories import completed.",
+                    successfulCategories = validCategories,
+                    validationErrors = validationErrors
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
     }
