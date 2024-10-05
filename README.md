@@ -78,6 +78,7 @@ The application can be tested via Swagger, which supports:
 - **Entity Framework Core** – ORM for database interactions
 - **JWT Bearer Authentication** – Secure authentication
 - **Swagger** – API testing and documentation interface
+- **EEPLUS** -  Importing From and Exporting To Excel 
 
 ## License
 This project is licensed under the MIT License.
