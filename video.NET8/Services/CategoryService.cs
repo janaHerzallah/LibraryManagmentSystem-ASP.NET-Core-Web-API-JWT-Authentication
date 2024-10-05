@@ -268,6 +268,21 @@ namespace LibraryManagementSystem.Services
             }).ToListAsync();
         }
 
+
+        public async Task<IEnumerable<ExcelExportCategoryResponse>> ExportCategoriesToExcel()
+        {
+            return await _context.Categories
+                                 .Select(c => new ExcelExportCategoryResponse
+                                 {
+                                     Id = c.Id,
+                                     Name = c.Name,
+                                     Description = c.Description,
+                                     CreatedAt = c.DateCreated,
+                                     UpdatedAt = c.DateModified,
+                                   
+                                 })
+                                 .ToListAsync();
+        }
         public async Task<(List<AddCategoryRequest> validCategories, List<validationErrorCategoryListResponse> validationErrors)> ImportCategoriesFromExcel(IFormFile excelFile)
         {
             if (excelFile == null || excelFile.Length == 0)

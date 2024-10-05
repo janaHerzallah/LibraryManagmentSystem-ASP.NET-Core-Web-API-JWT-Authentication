@@ -155,7 +155,7 @@ namespace LibraryManagmentSystem.Controllers
 
         // Export data to Excel
         [HttpGet]
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ExportBooksToExcel()
         {
             var AllBooks = await _bookService.GetAllBooks();
@@ -166,6 +166,7 @@ namespace LibraryManagmentSystem.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ImportBooksFromExcel(IFormFile excelFile)
         {
             try

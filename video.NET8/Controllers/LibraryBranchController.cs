@@ -178,10 +178,10 @@ namespace LibraryManagementSystem.Controllers
 
         // Export data to Excel
         [HttpGet]
-        // [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ExportBranchesToExcel()
         {
-            var AllBranches = await _libraryBranchService.GetAllBranches();
+            var AllBranches = await _libraryBranchService.ExportBranchesToExcel();
 
             var fileContent = _excelService.GenerateExcelSheet(AllBranches, "ReportOfAllBranches");
 
@@ -191,6 +191,8 @@ namespace LibraryManagementSystem.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
+
         public async Task<IActionResult> ImportBranchesFromExcel(IFormFile excelFile)
         {
             try

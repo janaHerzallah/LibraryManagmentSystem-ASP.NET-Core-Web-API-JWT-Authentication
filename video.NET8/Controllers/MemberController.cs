@@ -228,7 +228,7 @@ namespace LibraryManagementSystem.Controllers
         // Export data to Excel
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllMembersExcel()
+        public async Task<IActionResult> ExportAllMembersToExcel()
         {
             var AllMembers = await _memberService.GetAllMembers();
 
@@ -240,7 +240,7 @@ namespace LibraryManagementSystem.Controllers
         // Export data to Excel
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetActiveMembersExcel()
+        public async Task<IActionResult> ExportActiveMembersToExcel()
         {
             var ActiveMembers = await _memberService.GetActiveMembers();
 

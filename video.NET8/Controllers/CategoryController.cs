@@ -207,10 +207,10 @@ namespace LibraryManagementSystem.Controllers
 
         // Export data to Excel
         [HttpGet]
-       // [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ExportCategoriesToExcel()
         {
-            var AllCategories = await _categoryService.GetAllCategories();
+            var AllCategories = await _categoryService.ExportCategoriesToExcel();
 
             var fileContent = _excelService.GenerateExcelSheet(AllCategories, "ReportOfAllCategories");
 
@@ -219,6 +219,7 @@ namespace LibraryManagementSystem.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ImportCategoriesFromExcel(IFormFile excelFile)
         {
             try

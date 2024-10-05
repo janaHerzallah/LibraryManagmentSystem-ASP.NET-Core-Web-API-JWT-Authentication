@@ -26,6 +26,7 @@ namespace LibraryManagementSystem.Interfaces
 
         Task<IEnumerable<GetBooksDetailsResponse>> SearchBooks(string? title = null, string? authorName = null);
 
+        Task<IEnumerable<ExcelExportCategoryResponse>> ExportCategoriesToExcel();
         Task<(List<AddCategoryRequest> validCategories, List<validationErrorCategoryListResponse> validationErrors)> ImportCategoriesFromExcel(IFormFile excelFile);
 
 

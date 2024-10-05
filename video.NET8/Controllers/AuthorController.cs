@@ -185,9 +185,9 @@ namespace LibraryManagmentSystem.Controllers
         // Export data to Excel
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllAuthorsExcel()
+        public async Task<IActionResult> ExportAllAuthorsToExcel()
         {
-            var AllAuthors = await _authorService.GetAllAuthors();
+            var AllAuthors = await _authorService.ExportAllAuthorsToExcel();
 
             var fileContent = _excelService.GenerateExcelSheet(AllAuthors, "ReportOfAllAuthors");
 
@@ -196,10 +196,10 @@ namespace LibraryManagmentSystem.Controllers
 
         // Export data to Excel
         [HttpGet]
-        //[Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ExportAuthorsToExcel()
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ExportActiveAuthorsToExcel()
         {
-            var ActiveAuthors = await _authorService.GetActiveAuthors();
+            var ActiveAuthors = await _authorService.ExportActiveAuthorsToExcel();
 
             var fileContent = _excelService.GenerateExcelSheet(ActiveAuthors, "ReportOfActiveAuthors");
 
@@ -208,6 +208,7 @@ namespace LibraryManagmentSystem.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ImportAuthorsFromExcel(IFormFile excelFile)
         {
             try

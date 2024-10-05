@@ -202,6 +202,37 @@ namespace LibraryManagementSystem.Services
         await _context.SaveChangesAsync();
     }
 
+
+        public async Task<IEnumerable<ExcelExportAuthorResponse>> ExportAllAuthorsToExcel()
+        {
+            var list = await _context.Authors
+                                     .Select(a => new ExcelExportAuthorResponse
+                                     {
+                                         Id = a.Id,
+                                         Name = a.Name,
+                                         
+                                     }).ToListAsync();
+            return list;
+
+
+        }
+
+
+        public async Task<IEnumerable<ExcelExportAuthorResponse>> ExportActiveAuthorsToExcel()
+        {
+            var list = await _context.Authors
+                                     .Where(a => a.Active == true)
+                                     .Select(a => new ExcelExportAuthorResponse
+                                     {
+                                         Id = a.Id,
+                                         Name = a.Name,
+
+                                     }).ToListAsync();
+            return list;
+
+
+        }
+
         public async Task<(List<AddAuthorRequest> validAuthors, List<validationErrorAuthorListResponse> validationErrors)> ImportAuthorsFromExcel(IFormFile excelFile)
         {
             if (excelFile == null || excelFile.Length == 0)

@@ -271,6 +271,21 @@ namespace LibraryManagementSystem.Services
             return true;
         }
 
+        public async Task<IEnumerable<ExcelExportBranchResponse>> ExportBranchesToExcel()
+        {
+            return await _context.Branches
+                                 .Select(lb => new ExcelExportBranchResponse
+                                 {
+                                     BranchId = lb.Id,
+                                     Name = lb.Name,
+                                     Location = lb.Location,
+                                     Active = lb.Active,
+                                     CreatedDate = lb.DateCreated,
+                                     UpdatedDate = lb.DateModified
+                                 })
+                                 .ToListAsync();
+        }
+
         public async Task<(List<AddLibraryBranchRequest> validBranches, List<ValidationErrorBranchResponse> validationErrors)> ImportBranchesFromExcel(IFormFile excelFile)
         {
             if (excelFile == null || excelFile.Length == 0)
