@@ -158,11 +158,20 @@ namespace LibraryManagmentSystem.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ExportBooksToExcel()
         {
-            var AllBooks = await _bookService.GetAllBooks();
+            try
+            {
+                var AllBooks = await _bookService.GetAllBooks();
 
-            var fileContent = _excelService.GenerateExcelSheet(AllBooks, "ReportOfAllBooks");
+                var fileContent = _excelService.GenerateExcelSheet(AllBooks, "ReportOfAllBooks");
 
-            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfAllBooks.xlsx");
+                return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfAllBooks.xlsx");
+            }
+            
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+
         }
 
         [HttpPost]

@@ -8,7 +8,7 @@ namespace LibraryManagementSystem.Interfaces
         public interface IMemberService
         {
 
-        Task<IEnumerable<GetMemberResponse>> GetAllMembers();
+            Task<IEnumerable<GetMemberResponse>> GetAllMembers();
             Task<IEnumerable<GetMemberResponse>> GetActiveMembers();
             Task<GetMemberResponse> GetMemberById(int id);
             Task<GetMemberResponse> AddMember(AddMemberRequest member);
@@ -22,6 +22,9 @@ namespace LibraryManagementSystem.Interfaces
             Task<IEnumerable<GetBorrowedBooksForAMemberResponse>> GetOverDueBorrowedBooks(int memberId, string token);
 
             Task<int> GetOverdueBooksCount(int memberId, string token);
+
+            Task<(List<AddMemberRequest> validMembers, List<ValidationErrorMemberListResponse> validationErrors)> ImportMembersFromExcel(IFormFile excelFile);
+        
         }
     }
 

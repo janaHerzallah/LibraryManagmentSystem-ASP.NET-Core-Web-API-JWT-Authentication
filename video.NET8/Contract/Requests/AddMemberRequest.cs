@@ -13,7 +13,7 @@ namespace LibraryManagmentSystem.Contract.Requests
 
         public int userId { get; set; } // it can be null if there is no user related to it
         
-
+        public int OverDueCount { get; set; }
 
     }
 }

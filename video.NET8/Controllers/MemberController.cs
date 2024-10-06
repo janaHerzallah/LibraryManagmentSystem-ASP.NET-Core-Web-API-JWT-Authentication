@@ -30,7 +30,7 @@ namespace LibraryManagementSystem.Controllers
         // and only allow admins to access the method
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<IEnumerable<Member>>> GetAllMembers()
+        public async Task<ActionResult<IEnumerable<GetMemberResponse>>> GetAllMembers()
         {
             try
             {
@@ -47,7 +47,7 @@ namespace LibraryManagementSystem.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<IEnumerable<Member>>> GetActiveMembers()
+        public async Task<ActionResult<IEnumerable<GetMemberResponse>>> GetActiveMembers()
         {
             try
             {
@@ -63,7 +63,7 @@ namespace LibraryManagementSystem.Controllers
 
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<Member>> GetMemberById(int id)
+        public async Task<ActionResult<GetMemberResponse>> GetMemberById(int id)
         {
             try
             {
@@ -248,5 +248,41 @@ namespace LibraryManagementSystem.Controllers
 
             return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfActiveMembers.xlsx");
         }
+
+
+
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ImportMembersFromExcel(IFormFile excelFile)
+        {
+            try
+            {
+                var (validMembers, validationErrors) = await _memberService.ImportMembersFromExcel(excelFile);
+
+                // Create members in the database for valid entries
+                foreach (var member in validMembers)
+                {
+                    
+                    await _memberService.AddMember(member);
+                }
+
+                return Ok(new
+                {
+                    message = "Members import completed.",
+                    successfulMembers = validMembers,
+                    validationErrors = validationErrors
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
     }
 }

@@ -290,6 +290,8 @@ namespace LibraryManagementSystem.Services
                         var booksText = worksheet.Cells[row, 2].Text;
                         var books = new List<AddAuthorsBooksRequest>();
 
+                        // if there is a list of books, split them by comma
+
                         if (!string.IsNullOrWhiteSpace(booksText))
                         {
                             // Assuming booksText is a comma-separated list of book titles
@@ -331,15 +333,7 @@ namespace LibraryManagementSystem.Services
             return (validAuthors, validationErrorList);
         }
 
-        private int? TryParseInt(string value)
-        {
-            if (int.TryParse(value, out int result))
-            {
-                return result;
-            }
-            return null;
-        }
-
+     
 
     }
 }

@@ -182,16 +182,25 @@ namespace LibraryManagmentSystem.Controllers
             
         }
 
-        // Export data to Excel
+        // Export all authors data to Excel
         [HttpGet]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ExportAllAuthorsToExcel()
         {
-            var AllAuthors = await _authorService.ExportAllAuthorsToExcel();
+            try
+            {
+                var AllAuthors = await _authorService.ExportAllAuthorsToExcel();
 
-            var fileContent = _excelService.GenerateExcelSheet(AllAuthors, "ReportOfAllAuthors");
+                var fileContent = _excelService.GenerateExcelSheet(AllAuthors, "ReportOfAllAuthors");
 
-            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfAllAuthors.xlsx");
+                return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfAllAuthors.xlsx");
+            }
+
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
         // Export data to Excel
@@ -199,11 +208,22 @@ namespace LibraryManagmentSystem.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ExportActiveAuthorsToExcel()
         {
-            var ActiveAuthors = await _authorService.ExportActiveAuthorsToExcel();
+            try
+            {
 
-            var fileContent = _excelService.GenerateExcelSheet(ActiveAuthors, "ReportOfActiveAuthors");
+                var ActiveAuthors = await _authorService.ExportActiveAuthorsToExcel();
 
-            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfActiveAuthors.xlsx");
+                var fileContent = _excelService.GenerateExcelSheet(ActiveAuthors, "ReportOfActiveAuthors");
+
+                return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfActiveAuthors.xlsx");
+
+            }
+            
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+
         }
 
 

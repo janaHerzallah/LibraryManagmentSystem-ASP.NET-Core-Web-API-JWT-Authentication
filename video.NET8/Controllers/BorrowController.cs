@@ -114,7 +114,7 @@ namespace LibraryManagementSystem.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ImportBorrows(IFormFile file)
+        public async Task<IActionResult> ImportBorrowsFromExcel(IFormFile file)
         {
             if (file == null || file.Length == 0)
             {
