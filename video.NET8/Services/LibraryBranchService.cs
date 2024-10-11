@@ -397,6 +397,12 @@ namespace LibraryManagementSystem.Services
                 }
             }
 
+            // Create branches in the database for valid entries
+            foreach (var branch in validBranches)
+            {
+                await AddBranch(branch);
+            }
+
             return (validBranches, validationErrorList);
         }
     

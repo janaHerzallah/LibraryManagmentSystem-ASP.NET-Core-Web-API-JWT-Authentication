@@ -130,12 +130,6 @@ namespace LibraryManagementSystem.Controllers
                 // Import valid borrows and validation errors from the Excel file
                 var (validBorrows, validationErrors) = await _borrowService.ImportBorrowsFromExcel(file);
 
-                // Create borrows in the database for valid entries
-                foreach (var borrow in validBorrows)
-                {
-                    // create another function that adds borrow rows to the database
-                     await _borrowService.AddBorrowRecordfromExcel(borrow);
-                }
 
                 return Ok(new
                 {

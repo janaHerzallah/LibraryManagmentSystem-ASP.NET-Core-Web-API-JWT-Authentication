@@ -374,6 +374,14 @@ namespace LibraryManagementSystem.Services
                 }
             }
 
+
+            // Create categories in the database for valid entries
+            foreach (var category in validCategories)
+            {
+                await AddCategory(category);
+            }
+
+
             return (validCategories, validationErrorList);
         }
 

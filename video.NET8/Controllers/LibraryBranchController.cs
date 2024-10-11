@@ -199,11 +199,7 @@ namespace LibraryManagementSystem.Controllers
             {
                 var (validBranches, validationErrors) = await _libraryBranchService.ImportBranchesFromExcel(excelFile);
 
-                // Create branches in the database for valid entries
-                foreach (var branch in validBranches)
-                {
-                    await _libraryBranchService.AddBranch(branch);
-                }
+                
 
                 return Ok(new
                 {

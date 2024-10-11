@@ -182,12 +182,7 @@ namespace LibraryManagmentSystem.Controllers
             {
                 var (validBooks, validationErrors) = await _bookService.ImportBooksFromExcel(excelFile);
 
-                // Create books in the database for valid entries
-                foreach (var book in validBooks)
-                {
-                    await _bookService.AddBook(book);
-                }
-
+        
                 return Ok(new
                 {
                     message = "Books import completed.",

@@ -135,5 +135,31 @@ namespace LibraryManagmentSystem.Controllers
             return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfActiveUsers.xlsx");
         }
 
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ImportUsersFromExcel(IFormFile excelFile)
+        {
+            try
+            {
+                var (validUsers, validationErrors) = await _userService.ImportUsersFromExcel(excelFile); // Assuming _userService is injected
+
+                return Ok(new
+                {
+                    message = "User import completed.",
+                    successfulUsers = validUsers,
+                    validationErrors = validationErrors
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
     }
 }

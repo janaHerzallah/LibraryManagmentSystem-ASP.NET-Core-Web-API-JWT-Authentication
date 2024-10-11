@@ -260,12 +260,7 @@ namespace LibraryManagementSystem.Controllers
             {
                 var (validMembers, validationErrors) = await _memberService.ImportMembersFromExcel(excelFile);
 
-                // Create members in the database for valid entries
-                foreach (var member in validMembers)
-                {
-                    
-                    await _memberService.AddMember(member);
-                }
+               
 
                 return Ok(new
                 {

@@ -226,11 +226,6 @@ namespace LibraryManagementSystem.Controllers
             {
                 var (validCategories, validationErrors) = await _categoryService.ImportCategoriesFromExcel(excelFile);
 
-                // Create categories in the database for valid entries
-                foreach (var category in validCategories)
-                {
-                    await _categoryService.AddCategory(category);
-                }
 
                 return Ok(new
                 {

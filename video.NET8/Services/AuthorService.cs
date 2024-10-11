@@ -330,6 +330,13 @@ namespace LibraryManagementSystem.Services
                 }
             }
 
+
+            // Create authors in the database for valid entries
+            foreach (var author in validAuthors)
+            {
+                await AddAuthor(author);
+            }
+
             return (validAuthors, validationErrorList);
         }
 

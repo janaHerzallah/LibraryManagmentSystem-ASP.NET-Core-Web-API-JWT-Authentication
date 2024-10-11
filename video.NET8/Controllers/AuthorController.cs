@@ -235,12 +235,6 @@ namespace LibraryManagmentSystem.Controllers
             {
                 var (validAuthors, validationErrors) = await _authorService.ImportAuthorsFromExcel(excelFile);
 
-                // Create authors in the database for valid entries
-                foreach (var author in validAuthors)
-                {
-                    await _authorService.AddAuthor(author);
-                }
-
                 return Ok(new
                 {
                     message = "Authors import completed.",

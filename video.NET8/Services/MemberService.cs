@@ -473,6 +473,14 @@ namespace LibraryManagementSystem.Services
                 }
             }
 
+
+            // Create members in the database for valid entries
+            foreach (var member in validMembers)
+            {
+
+                await AddMember(member);
+            }
+
             return (validMembers, validationErrorList);
         }
 
@@ -489,7 +497,13 @@ namespace LibraryManagementSystem.Services
                 return false;
             }
         }
-
+        /*
+         
+         The MailAddress constructor attempts to parse the email.
+        If the email is valid, the addr.Address will match the input email.
+        If parsing fails, it throws an exception, caught in the catch block, and the method returns false.
+       
+         */
 
 
         private async Task<bool> UserExists(int userId)
@@ -501,8 +515,6 @@ namespace LibraryManagementSystem.Services
         {
             return await _context.Members.AnyAsync(m => m.UserId == userId);
         }
-
-
 
     }
 }
