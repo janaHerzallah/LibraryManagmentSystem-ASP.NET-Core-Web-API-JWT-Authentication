@@ -19,6 +19,7 @@ namespace LibraryManagmentSystem.Interfaces
 
         Task<bool> RemoveBookFromBranch(int bookId, int branchId);
 
+        Task<IEnumerable<ExcelExportBranchResponse>> ExportBranchesToExcel();
         Task<(List<AddLibraryBranchRequest> validBranches, List<ValidationErrorBranchResponse> validationErrors)> ImportBranchesFromExcel(IFormFile excelFile);
 
 

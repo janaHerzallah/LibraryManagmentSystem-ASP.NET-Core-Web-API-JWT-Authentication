@@ -333,6 +333,13 @@ namespace LibraryManagementSystem.Services
                 }
             }
 
+
+            // Create books in the database for valid entries
+            foreach (var book in validBooks)
+            {
+                await AddBook(book);
+            }
+
             return (validBooks, validationErrorList);
         }
 

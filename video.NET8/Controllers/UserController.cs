@@ -114,25 +114,51 @@ namespace LibraryManagmentSystem.Controllers
         // Export data to Excel
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllMembersExcel()
+        public async Task<IActionResult> ExportAllUsersToExcel()
         {
             var AllMembers = await _userService.GetAllMembers();
            
-            var fileContent = _excelService.GenerateExcelSheet(AllMembers, "ReportOfAllMembers");
+            var fileContent = _excelService.GenerateExcelSheet(AllMembers, "ReportOfAllUsers");
 
-            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfAllMembers.xlsx");
+            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfAllUsers.xlsx");
         }
 
         // Export data to Excel
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetActiveMembersExcel()
+        public async Task<IActionResult> ExportActiveUsersToExcel()
         {
             var ActiveMembers = await _userService.GetActiveMembers();
 
-            var fileContent = _excelService.GenerateExcelSheet(ActiveMembers, "ReportOfActiveMembers");
+            var fileContent = _excelService.GenerateExcelSheet(ActiveMembers, "ReportOfActiveUsers");
 
-            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfActiveMembers.xlsx");
+            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfActiveUsers.xlsx");
+        }
+
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ImportUsersFromExcel(IFormFile excelFile)
+        {
+            try
+            {
+                var (validUsers, validationErrors) = await _userService.ImportUsersFromExcel(excelFile); // Assuming _userService is injected
+
+                return Ok(new
+                {
+                    message = "User import completed.",
+                    successfulUsers = validUsers,
+                    validationErrors = validationErrors
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
     }

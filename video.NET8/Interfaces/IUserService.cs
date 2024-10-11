@@ -18,6 +18,10 @@ namespace LibraryManagmentSystem.Interfaces
 
         Task<ActivateAndDeactivateUserResponse> ReActivateUser(ActivateDeActivateUserRequest request);
 
-      
+        Task<(List<AddUserFromExcelRequest> validUsers, List<ValidationErrorUserResponse> validationErrors)> ImportUsersFromExcel(IFormFile excelFile);
+
+
+
+
     }
 }

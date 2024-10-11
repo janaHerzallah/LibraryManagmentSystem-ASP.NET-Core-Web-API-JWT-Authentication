@@ -182,43 +182,58 @@ namespace LibraryManagmentSystem.Controllers
             
         }
 
-        // Export data to Excel
+        // Export all authors data to Excel
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllAuthorsExcel()
+        public async Task<IActionResult> ExportAllAuthorsToExcel()
         {
-            var AllAuthors = await _authorService.GetAllAuthors();
+            try
+            {
+                var AllAuthors = await _authorService.ExportAllAuthorsToExcel();
 
-            var fileContent = _excelService.GenerateExcelSheet(AllAuthors, "ReportOfAllAuthors");
+                var fileContent = _excelService.GenerateExcelSheet(AllAuthors, "ReportOfAllAuthors");
 
-            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfAllAuthors.xlsx");
+                return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfAllAuthors.xlsx");
+            }
+
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
         // Export data to Excel
         [HttpGet]
-        //[Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ExportAuthorsToExcel()
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ExportActiveAuthorsToExcel()
         {
-            var ActiveAuthors = await _authorService.GetActiveAuthors();
+            try
+            {
 
-            var fileContent = _excelService.GenerateExcelSheet(ActiveAuthors, "ReportOfActiveAuthors");
+                var ActiveAuthors = await _authorService.ExportActiveAuthorsToExcel();
 
-            return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfActiveAuthors.xlsx");
+                var fileContent = _excelService.GenerateExcelSheet(ActiveAuthors, "ReportOfActiveAuthors");
+
+                return File(fileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ReportOfActiveAuthors.xlsx");
+
+            }
+            
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+
         }
 
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ImportAuthorsFromExcel(IFormFile excelFile)
         {
             try
             {
                 var (validAuthors, validationErrors) = await _authorService.ImportAuthorsFromExcel(excelFile);
-
-                // Create authors in the database for valid entries
-                foreach (var author in validAuthors)
-                {
-                    await _authorService.AddAuthor(author);
-                }
 
                 return Ok(new
                 {

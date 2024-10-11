@@ -202,6 +202,37 @@ namespace LibraryManagementSystem.Services
         await _context.SaveChangesAsync();
     }
 
+
+        public async Task<IEnumerable<ExcelExportAuthorResponse>> ExportAllAuthorsToExcel()
+        {
+            var list = await _context.Authors
+                                     .Select(a => new ExcelExportAuthorResponse
+                                     {
+                                         Id = a.Id,
+                                         Name = a.Name,
+                                         
+                                     }).ToListAsync();
+            return list;
+
+
+        }
+
+
+        public async Task<IEnumerable<ExcelExportAuthorResponse>> ExportActiveAuthorsToExcel()
+        {
+            var list = await _context.Authors
+                                     .Where(a => a.Active == true)
+                                     .Select(a => new ExcelExportAuthorResponse
+                                     {
+                                         Id = a.Id,
+                                         Name = a.Name,
+
+                                     }).ToListAsync();
+            return list;
+
+
+        }
+
         public async Task<(List<AddAuthorRequest> validAuthors, List<validationErrorAuthorListResponse> validationErrors)> ImportAuthorsFromExcel(IFormFile excelFile)
         {
             if (excelFile == null || excelFile.Length == 0)
@@ -259,6 +290,8 @@ namespace LibraryManagementSystem.Services
                         var booksText = worksheet.Cells[row, 2].Text;
                         var books = new List<AddAuthorsBooksRequest>();
 
+                        // if there is a list of books, split them by comma
+
                         if (!string.IsNullOrWhiteSpace(booksText))
                         {
                             // Assuming booksText is a comma-separated list of book titles
@@ -297,18 +330,17 @@ namespace LibraryManagementSystem.Services
                 }
             }
 
+
+            // Create authors in the database for valid entries
+            foreach (var author in validAuthors)
+            {
+                await AddAuthor(author);
+            }
+
             return (validAuthors, validationErrorList);
         }
 
-        private int? TryParseInt(string value)
-        {
-            if (int.TryParse(value, out int result))
-            {
-                return result;
-            }
-            return null;
-        }
-
+     
 
     }
 }

@@ -5,6 +5,7 @@ using LibraryManagmentSystem.Contract.Requests;
 using LibraryManagmentSystem.Contract.Responses;
 using LibraryManagmentSystem.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
 
 
 namespace LibraryManagementSystem.Services
@@ -37,6 +38,8 @@ namespace LibraryManagementSystem.Services
                 userId = m.UserId
             });
         }
+
+
         public async Task<IEnumerable<GetMemberResponse>> GetActiveMembers()
         {
            var member= await _context.Members.Where(m => m.Active).ToListAsync();
@@ -84,12 +87,12 @@ namespace LibraryManagementSystem.Services
             Member memberDataBase = new Member
             {
                 Name = member.Name,
-                
                 Email = member.Email,
                 Active = true, // default value
                 DateCreated = DateTime.UtcNow,
                 DateModified = DateTime.UtcNow,
-                UserId = member.userId
+                UserId = member.userId,
+                OverDueCount = member.OverDueCount
             };
 
             _context.Members.Add(memberDataBase);
@@ -340,6 +343,178 @@ namespace LibraryManagementSystem.Services
         }
 
 
+
+        public async Task<(List<AddMemberRequest> validMembers, List<ValidationErrorMemberListResponse> validationErrors)> ImportMembersFromExcel(IFormFile excelFile)
+        {
+            if (excelFile == null || excelFile.Length == 0)
+            {
+                throw new ArgumentException("No file uploaded or file is empty.");
+            }
+
+            var validMembers = new List<AddMemberRequest>();
+            var validationErrorList = new List<ValidationErrorMemberListResponse>();
+
+            using (var stream = new MemoryStream())
+            {
+                await excelFile.CopyToAsync(stream);
+                using (var package = new ExcelPackage(stream))
+                {
+                    var worksheet = package.Workbook.Worksheets[0]; // Assume the data is in the first worksheet
+
+                    // Validate columns
+                    var expectedColumns = new List<string> { "Name", "Email", "UserId", "OverDueCount" };
+                    var columnNames = new List<string>();
+
+                    for (int col = 1; col <= worksheet.Dimension.Columns; col++)
+                    {
+                        var columnName = worksheet.Cells[1, col].Text.Trim();
+                        columnNames.Add(columnName);
+                    }
+
+                    // Check if all expected columns are present and no extra columns exist
+                    if (!expectedColumns.SequenceEqual(columnNames))
+                    {
+                        throw new ArgumentException($"Column validation failed. Expected columns: {string.Join(", ", expectedColumns)}. Found: {string.Join(", ", columnNames)}");
+                    }
+
+                    int rowCount = worksheet.Dimension.Rows;
+
+                    for (int row = 2; row <= rowCount; row++)
+                    {
+                        var errorMessage = string.Empty;
+                        var haveError = false;
+
+                        // Validate Member Name
+                        var nameText = worksheet.Cells[row, 1].Text;
+                        if (string.IsNullOrWhiteSpace(nameText))
+                        {
+                            errorMessage += "Member name is required. ";
+                            haveError = true;
+                        }
+                        else if (double.TryParse(nameText, out _)) // Check if name is not a number
+                        {
+                            errorMessage += "Member name must be a string. ";
+                            haveError = true;
+                        }
+
+                        // Validate Email format
+                        var emailText = worksheet.Cells[row, 2].Text;
+                        if (string.IsNullOrWhiteSpace(emailText))
+                        {
+                            errorMessage += "Email is required. ";
+                            haveError = true;
+                        }
+                        else if (!IsValidEmail(emailText)) // Email format validation
+                        {
+                            errorMessage += "Email format is invalid. ";
+                            haveError = true;
+                        }
+
+                        // Validate UserId
+                        var userIdText = worksheet.Cells[row, 3].Text;
+                        int userId;
+                        if (!int.TryParse(userIdText, out userId))
+                        {
+                            errorMessage += "UserId must be a valid integer. ";
+                            haveError = true;
+                        }
+                        else
+                        {
+                            // Check if the UserId exists in the Users table and is not already associated with another member
+                            var userExists = await UserExists(userId);
+                            var userAssignedToAnotherMember = await IsUserAssignedToAnotherMember(userId);
+
+                            if (!userExists)
+                            {
+                                errorMessage += "UserId does not exist in the Users table. ";
+                                haveError = true;
+                            }
+                            else if (userAssignedToAnotherMember)
+                            {
+                                errorMessage += "UserId is already assigned to another member. ";
+                                haveError = true;
+                            }
+                        }
+
+                        // Validate OverDueCount is a number
+                        var overDueCountText = worksheet.Cells[row, 4].Text;
+                        int overDueCount;
+                        if (!int.TryParse(overDueCountText, out overDueCount))
+                        {
+                            errorMessage += "OverDueCount must be a valid integer. ";
+                            haveError = true;
+                        }
+
+                        // If there are errors, add to the error list
+                        if (haveError)
+                        {
+                            validationErrorList.Add(new ValidationErrorMemberListResponse
+                            {
+                                RowNumber = row,
+                                Name = nameText,
+                                Email = emailText,
+                                ErrorMessage = errorMessage.Trim()
+                            });
+                            continue;
+                        }
+
+                        // If no errors, create member request object
+                        var memberRequest = new AddMemberRequest
+                        {
+                            Name = nameText,
+                            Email = emailText,
+                            userId = userId,
+                            OverDueCount = overDueCount
+                            
+                        };
+
+                        validMembers.Add(memberRequest); // Add valid member to the list
+                    }
+                }
+            }
+
+
+            // Create members in the database for valid entries
+            foreach (var member in validMembers)
+            {
+
+                await AddMember(member);
+            }
+
+            return (validMembers, validationErrorList);
+        }
+
+        // Helper method to validate email format
+        private bool IsValidEmail(string email)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        /*
+         
+         The MailAddress constructor attempts to parse the email.
+        If the email is valid, the addr.Address will match the input email.
+        If parsing fails, it throws an exception, caught in the catch block, and the method returns false.
+       
+         */
+
+
+        private async Task<bool> UserExists(int userId)
+        {
+            return await _context.Users.AnyAsync(u => u.Id == userId);
+        }
+
+        private async Task<bool> IsUserAssignedToAnotherMember(int userId)
+        {
+            return await _context.Members.AnyAsync(m => m.UserId == userId);
+        }
 
     }
 }

@@ -17,6 +17,10 @@ namespace LibraryManagmentSystem.Interfaces
         Task<bool> DeleteAuthor(int id); // admin only
         Task SoftDeleteAuthor(int id); // admin only
 
+       Task<IEnumerable<ExcelExportAuthorResponse>> ExportAllAuthorsToExcel();
+
+        Task<IEnumerable<ExcelExportAuthorResponse>> ExportActiveAuthorsToExcel();
+
         Task<(List<AddAuthorRequest> validAuthors, List<validationErrorAuthorListResponse> validationErrors)> ImportAuthorsFromExcel(IFormFile excelFile);
     }
 }
