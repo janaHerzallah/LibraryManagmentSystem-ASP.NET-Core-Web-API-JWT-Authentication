@@ -31,6 +31,8 @@ builder.Services.AddScoped<IBorrowService, BorrowService>();
 builder.Services.AddScoped<ILibraryBranchService, LibraryBranchService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IExcelService, ExcelService>();
+builder.Services.AddSingleton<MongoDbService>();
+builder.Services.AddScoped<IBookMarketingInfoService, BookMarketingInfoService>();
 
 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
