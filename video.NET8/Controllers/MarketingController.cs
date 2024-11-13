@@ -25,6 +25,7 @@ namespace LibraryManagementSystem.Controllers
             return Ok(marketingInfo);
         }
 
+        // Add BookMarketingInfo with new information from the user
         [HttpPost]
         public async Task<IActionResult> AddMarketingInfo([FromBody] BookMarketingInfo info)
         {
@@ -32,11 +33,11 @@ namespace LibraryManagementSystem.Controllers
             return Ok(info);
         }
 
-
+        // this method is get but it 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetBookWithDetails(int id)
+        public async Task<IActionResult> addRecordInMongoUsingBookID(int id)
         {
-            var book = await _bookMarketingInfoService.GetBookWithDetails(id);
+            var book = await _bookMarketingInfoService.addRecordUsingBookID(id);
 
             if (book == null)
                 return NotFound();
@@ -94,12 +95,35 @@ namespace LibraryManagementSystem.Controllers
             try
             {
                 await _bookMarketingInfoService.DeleteMarketingInfoAsync(objectId);
-                return NoContent(); // 204 No Content
+                return Ok(); // 204 No Content
             }
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
         }
+
+
+        [HttpGet("FindByTitle")]
+        public async Task<IActionResult> FindByTitle([FromQuery] string title)
+        {
+            var results = await _bookMarketingInfoService.FindByTitleAsync(title);
+            return Ok(results);
+        }
+
+        [HttpGet("FindByBranch")]
+        public async Task<IActionResult> FindByBranch([FromQuery] string branch)
+        {
+            var results = await _bookMarketingInfoService.FindByBranchAsync(branch);
+            return Ok(results);
+        }
+
+        [HttpGet("FindByAvailableCopies")]
+        public async Task<IActionResult> FindByAvailableCopies([FromQuery] int minCopies)
+        {
+            var results = await _bookMarketingInfoService.FindByAvailableCopiesAsync(minCopies);
+            return Ok(results);
+        }
+
     }
 }

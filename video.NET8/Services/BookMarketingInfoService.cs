@@ -34,7 +34,7 @@ namespace LibraryManagmentSystem.Services
         }
 
 
-    public async Task<GetBookMarketingInfoResponse> GetBookWithDetails(int bookId)
+    public async Task<GetBookMarketingInfoResponse> addRecordUsingBookID(int bookId)
 
     {
         var book = await _context.Books
@@ -129,5 +129,25 @@ namespace LibraryManagmentSystem.Services
                 throw new KeyNotFoundException("BookMarketingInfo not found or not deleted.");
             }
         }
+
+
+        public async Task<List<BookMarketingInfo>> FindByTitleAsync(string title)
+        {
+            var filter = Builders<BookMarketingInfo>.Filter.Regex(b => b.Title, new MongoDB.Bson.BsonRegularExpression(title, "i"));
+            return await _bookMarketingInfoCollection.Find(filter).ToListAsync();
+        }
+
+        public async Task<List<BookMarketingInfo>> FindByBranchAsync(string branch)
+        {
+            var filter = Builders<BookMarketingInfo>.Filter.Eq(b => b.LibraryBranch, branch);
+            return await _bookMarketingInfoCollection.Find(filter).ToListAsync();
+        }
+
+        public async Task<List<BookMarketingInfo>> FindByAvailableCopiesAsync(int minCopies)
+        {
+            var filter = Builders<BookMarketingInfo>.Filter.Gte(b => b.AvailableCopies, minCopies);
+            return await _bookMarketingInfoCollection.Find(filter).ToListAsync();
+        }
+
     }
 }
